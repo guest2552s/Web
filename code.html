@@ -1,15 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>grader</title>
+  <title>Code Quest</title>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
 </head>
 <body>
 
-  <h1>ยินดีต้อนรับสู่ grader!</h1>
-  <p>เขียนโค้ดเพื่อผ่านด่าน</p>
-  <p>code here --------------------></p>
-  <p>story here</p>
-  <p>| |</p><p>| |</p><p>V</p>
+  <h1>Episode 1: The Gate</h1>
+  <p>เขียน C++ เพื่อผ่านด่าน</p>
+
+  <div id="editor" style="width:100%; height:300px; border:1px solid #ccc;"></div>
+
+  <button onclick="submitCode()">Submit</button>
+  <p id="output"></p>
+
+  <script>
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
+
+    let editor;
+
+    require(['vs/editor/editor.main'], function() {
+      editor = monaco.editor.create(document.getElementById('editor'), {
+        value: '#include <iostream>\nusing namespace std;\nint main() {\n\n}',
+        language: 'cpp',
+        theme: 'vs-dark'
+      });
+    });
+
+    function submitCode() {
+      const code = editor.getValue();
+      document.getElementById('output').innerHTML = "โค้ดของคุณ: " + code;
+    }
+  </script>
 
 </body>
 </html>
