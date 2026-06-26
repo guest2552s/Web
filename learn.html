@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Realm of Echoes — Battle</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #f0d080;
+    --gold-dim: #6b5520;
+    --crimson: #8b1a1a;
+    --crimson-light: #e04040;
+    --emerald: #1a5c3a;
+    --emerald-light: #2ecc71;
+    --sapphire: #1a3a6b;
+    --sapphire-light: #4a90d9;
+    --bg-deep: #080810;
+    --bg-mid: #0f0f1e;
+    --bg-panel: #12121f;
+    --border: rgba(201,168,76,0.25);
+    --text: #e8dfc0;
+    --text-dim: #8a7d5a;
+    --shadow-gold: 0 0 20px rgba(201,168,76,0.3);
+    --shadow-red: 0 0 20px rgba(200,50,50,0.4);
+    --shadow-blue: 0 0 20px rgba(74,144,217,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Background atmosphere */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 80%, rgba(139,26,26,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 20%, rgba(26,58,107,0.2) 0%, transparent 60%),
+      radial-gradient(ellipse 100% 60% at 50% 100%, rgba(10,5,30,0.9) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* Stars */
+  .stars {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--d) infinite ease-in-out;
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: var(--o1); transform: scale(1); }
+    50% { opacity: var(--o2); transform: scale(1.5); }
+  }
+
+  #game {
+    position: relative; z-index: 1;
+    width: 900px; max-width: 98vw;
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 10px;
+  }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 16px;
+    background: linear-gradient(90deg, rgba(201,168,76,0.08), transparent, rgba(201,168,76,0.08));
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .floor-info { font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold-dim); letter-spacing: 3px; text-transform: uppercase; }
+  .title-text { font-family: 'Cinzel Decorative', serif; font-size: 14px; color: var(--gold); letter-spacing: 2px; text-shadow: var(--shadow-gold); }
+  .run-info { font-family: 'Cinzel', serif; font-size: 12px; color: var(--gold-dim); letter-spacing: 2px; }
+
+  /* ── BATTLE ARENA ── */
+  .arena {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    gap: 12px; align-items: end;
+    min-height: 280px;
+    padding: 20px 10px 10px;
+    position: relative;
+  }
+
+  /* Battlefield ground effect */
+  .arena::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+    background: linear-gradient(to top, rgba(201,168,76,0.05), transparent);
+    border-top: 1px solid rgba(201,168,76,0.08);
+    pointer-events: none;
+  }
+
+  /* Combatant cards */
+  .combatant {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 12px;
+    position: relative;
+  }
+  .combatant.player { align-items: flex-start; }
+  .combatant.enemy { align-items: flex-end; }
+
+  /* Sprite container */
+  .sprite-wrap {
+    width: 120px; height: 120px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .sprite {
+    width: 72px; height: 72px;
+    background: #ffffff;
+    border: 2px solid rgba(255,255,255,0.6);
+    box-shadow: 0 0 18px rgba(255,255,255,0.25), 0 8px 20px rgba(0,0,0,0.8);
+    animation: idle 3s ease-in-out infinite;
+    display: block;
+    cursor: default; user-select: none;
+    font-size: 0;
+  }
+  .enemy .sprite {
+    box-shadow: 0 0 18px rgba(255,100,100,0.2), 0 8px 20px rgba(0,0,0,0.8);
+  }
+  @keyframes idle {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-6px) scale(1.02); }
+  }
+  .sprite.attack-anim { animation: attack 0.4s ease; }
+  @keyframes attack {
+    0% { transform: translateX(0); }
+    30% { transform: translateX(40px) scale(1.1); }
+    60% { transform: translateX(-10px); }
+    100% { transform: translateX(0); }
+  }
+  .sprite.enemy-attack-anim { animation: enemy-attack 0.4s ease; }
+  @keyframes enemy-attack {
+    0% { transform: translateX(0); }
+    30% { transform: translateX(-40px) scale(1.1); }
+    60% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
+  }
+  .sprite.hurt-anim { animation: hurt 0.3s ease; }
+  @keyframes hurt {
+    0%,100% { transform: translateX(0); background: #ffffff; }
+    25% { transform: translateX(-8px); background: #ff4444; box-shadow: 0 0 24px rgba(255,50,50,1); }
+    75% { transform: translateX(8px); background: #ff4444; box-shadow: 0 0 24px rgba(255,50,50,1); }
+  }
+
+  /* Aura glow under sprite */
+  .sprite-aura {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 80px; height: 20px;
+    border-radius: 50%;
+    filter: blur(8px);
+    opacity: 0.6;
+  }
+  .player .sprite-aura { background: radial-gradient(ellipse, rgba(74,144,217,0.8), transparent); }
+  .enemy .sprite-aura { background: radial-gradient(ellipse, rgba(200,50,50,0.8), transparent); }
+
+  /* Name plate */
+  .name-plate {
+    font-family: 'Cinzel', serif;
+    font-size: 13px; font-weight: 600;
+    color: var(--gold-light);
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(201,168,76,0.5);
+  }
+  .monster-type {
+    font-size: 10px; color: var(--text-dim);
+    font-family: 'Cinzel', serif; letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* HP bar */
+  .hp-section { width: 180px; }
+  .hp-label {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+    font-size: 11px; font-family: 'Cinzel', serif; letter-spacing: 1px;
+  }
+  .hp-label .label { color: var(--text-dim); }
+  .hp-label .value { color: var(--text); font-weight: 600; }
+  .hp-track {
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .hp-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+  }
+  .hp-fill::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px 2px 0 0;
+  }
+  .hp-fill.high { background: linear-gradient(90deg, #1a8c4e, #2ecc71); }
+  .hp-fill.mid { background: linear-gradient(90deg, #8c7a1a, #f0c030); }
+  .hp-fill.low { background: linear-gradient(90deg, #8c1a1a, #e04040); }
+
+  /* MP bar */
+  .mp-section { width: 180px; }
+  .mp-track {
+    height: 5px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .mp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #1a3a8c, #4a90d9);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* Status badges */
+  .status-badges {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .badge {
+    font-size: 10px; padding: 2px 6px;
+    border-radius: 2px;
+    font-family: 'Cinzel', serif; letter-spacing: 1px;
+    border: 1px solid;
+    animation: badge-pulse 2s ease-in-out infinite;
+  }
+  @keyframes badge-pulse { 0%,100%{opacity:1}50%{opacity:0.7} }
+  .badge.burn { background: rgba(200,80,20,0.2); border-color: rgba(200,80,20,0.5); color: #e06030; }
+  .badge.poison { background: rgba(100,20,150,0.2); border-color: rgba(100,20,150,0.5); color: #a050d0; }
+  .badge.shield { background: rgba(74,144,217,0.2); border-color: rgba(74,144,217,0.5); color: #6aaeef; }
+  .badge.freeze { background: rgba(100,200,255,0.2); border-color: rgba(100,200,255,0.5); color: #80d8ff; }
+  .badge.rage { background: rgba(220,50,50,0.2); border-color: rgba(220,50,50,0.5); color: #ff4444; }
+
+  /* VS divider */
+  .vs-divider {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding-bottom: 30px;
+  }
+  .vs-text {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 18px; color: var(--gold);
+    text-shadow: var(--shadow-gold);
+    opacity: 0.6;
+  }
+  .vs-line {
+    width: 1px; height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--border), transparent);
+  }
+
+  /* ── DAMAGE NUMBERS ── */
+  .damage-float {
+    position: fixed;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 28px; font-weight: 900;
+    pointer-events: none; z-index: 100;
+    animation: float-up 1s ease forwards;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+  .damage-float.physical { color: #ff9944; }
+  .damage-float.magic { color: #aa66ff; }
+  .damage-float.heal { color: #44ff88; font-size: 22px; }
+  .damage-float.miss { color: #aaaaaa; font-size: 18px; }
+  .damage-float.critical { color: #ffdd00; font-size: 36px; }
+  @keyframes float-up {
+    0% { transform: translateY(0) scale(0.5); opacity: 1; }
+    30% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+    100% { transform: translateY(-80px) scale(1); opacity: 0; }
+  }
+
+  /* ── BATTLE LOG ── */
+  .log-panel {
+    height: 80px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 16px;
+    overflow: hidden;
+    position: relative;
+  }
+  .log-panel::before {
+    content: 'BATTLE LOG';
+    position: absolute; top: -8px; left: 16px;
+    font-family: 'Cinzel', serif; font-size: 9px;
+    color: var(--gold-dim); letter-spacing: 3px;
+    background: var(--bg-panel); padding: 0 6px;
+  }
+  .log-line {
+    font-size: 13px; line-height: 1.8;
+    color: var(--text-dim);
+    transition: color 0.3s;
+  }
+  .log-line.latest { color: var(--text); }
+  .log-line span.dmg { color: #ff9944; font-weight: 600; }
+  .log-line span.heal { color: #44ff88; }
+  .log-line span.magic { color: #aa66ff; }
+  .log-line span.name { color: var(--gold-light); font-style: italic; }
+  .log-line span.crit { color: #ffdd00; font-weight: 700; }
+
+  /* ── COMMAND INPUT ── */
+  .command-section {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .command-bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    position: relative;
+  }
+  .command-prompt {
+    font-family: 'Cinzel', serif;
+    font-size: 13px; color: var(--gold);
+    letter-spacing: 2px;
+    flex-shrink: 0;
+  }
+  .command-input {
+    flex: 1;
+    background: transparent;
+    border: none; outline: none;
+    font-family: 'Cinzel', serif;
+    font-size: 14px; color: var(--text);
+    letter-spacing: 3px;
+    caret-color: var(--gold);
+  }
+  .command-input::placeholder { color: var(--text-dim); font-size: 11px; letter-spacing: 2px; }
+  .command-hint {
+    font-family: 'Cinzel', serif; font-size: 10px;
+    color: var(--text-dim); letter-spacing: 2px;
+  }
+
+  /* Skill keybind list */
+  .skills-section {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .skill-btn {
+    background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(201,168,76,0.02));
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    position: relative; overflow: hidden;
+    transition: all 0.15s ease;
+    cursor: default;
+    font-family: 'Crimson Pro', serif;
+  }
+  .skill-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .skill-btn.fire::before { background: radial-gradient(circle at center, rgba(255,100,20,0.2), transparent); }
+  .skill-btn.ice::before { background: radial-gradient(circle at center, rgba(100,200,255,0.2), transparent); }
+  .skill-btn.lightning::before { background: radial-gradient(circle at center, rgba(200,200,50,0.2), transparent); }
+  .skill-btn.physical::before { background: radial-gradient(circle at center, rgba(200,150,50,0.2), transparent); }
+  .skill-btn.heal::before { background: radial-gradient(circle at center, rgba(50,200,100,0.2), transparent); }
+  .skill-btn.dark::before { background: radial-gradient(circle at center, rgba(150,50,200,0.2), transparent); }
+
+  .skill-btn.active::before { opacity: 1; }
+  .skill-btn.active {
+    border-color: rgba(201,168,76,0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4), var(--shadow-gold);
+  }
+  .skill-btn.disabled-skill { opacity: 0.3; }
+
+  .skill-key {
+    font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700;
+    color: var(--gold); letter-spacing: 1px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 3px;
+    padding: 1px 6px; min-width: 22px; text-align: center;
+  }
+  .skill-icon { font-size: 10px; font-family: 'Cinzel', serif; letter-spacing: 1px; color: var(--gold); font-weight: 700; }
+  .skill-name {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; color: var(--gold-light);
+    letter-spacing: 1px; text-align: center;
+  }
+  .skill-dmg { font-size: 10px; color: var(--text-dim); font-family: 'Cinzel', serif; }
+
+  /* MP cost pip */
+  .mp-pips { display: flex; gap: 2px; margin-top: 2px; }
+  .mp-pip {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--sapphire-light);
+    opacity: 0.6;
+  }
+
+  /* ── BOTTOM ROW ── */
+  .bottom-row {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 8px; align-items: center;
+  }
+
+  /* Player quick info */
+  .player-quick {
+    display: flex; gap: 16px; align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .quick-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .quick-label { font-family: 'Cinzel', serif; font-size: 9px; color: var(--gold-dim); letter-spacing: 2px; }
+  .quick-value { font-family: 'Cinzel', serif; font-size: 16px; color: var(--text); font-weight: 600; }
+  .quick-value.lv { color: var(--gold); font-size: 18px; }
+  .quick-divider { width: 1px; height: 30px; background: var(--border); }
+
+  /* Rune/item slots */
+  .rune-slots {
+    display: flex; gap: 4px;
+  }
+  .rune-slot {
+    width: 36px; height: 36px;
+    background: rgba(201,168,76,0.04);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .rune-slot:hover { border-color: rgba(201,168,76,0.5); background: rgba(201,168,76,0.1); }
+  .rune-slot .tooltip {
+    position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%);
+    background: rgba(10,10,20,0.95); border: 1px solid var(--border);
+    padding: 4px 8px; border-radius: 3px;
+    font-size: 10px; font-family: 'Cinzel', serif; letter-spacing: 1px;
+    color: var(--gold-light); white-space: nowrap;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .rune-slot:hover .tooltip { opacity: 1; }
+
+  /* Turn indicator */
+  .turn-indicator {
+    padding: 6px 14px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--gold);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .turn-indicator.enemy-turn { color: var(--crimson-light); border-color: rgba(200,50,50,0.3); }
+  .turn-indicator::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.05), transparent);
+    animation: sweep 2s linear infinite;
+  }
+  @keyframes sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Floor/enemy info */
+  .enemy-info-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .floor-badge {
+    font-family: 'Cinzel', serif; font-size: 10px;
+    letter-spacing: 2px; color: var(--gold-dim);
+    padding: 2px 8px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+  }
+  .enemy-tag {
+    font-size: 11px; font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+  }
+  .boss-tag { color: #ff4444; }
+  .elite-tag { color: #cc88ff; }
+  .normal-tag { color: var(--text-dim); }
+
+  /* ── LEVEL UP OVERLAY ── */
+  .levelup-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 300;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .levelup-overlay.active { opacity: 1; pointer-events: all; }
+
+  .levelup-header {
+    text-align: center; margin-bottom: 32px;
+  }
+  .levelup-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 36px; color: var(--gold);
+    letter-spacing: 4px;
+    text-shadow: 0 0 30px rgba(201,168,76,0.8), 0 0 60px rgba(201,168,76,0.4);
+    animation: pulse-glow 1.5s ease-in-out infinite;
+  }
+  .levelup-sub {
+    font-family: 'Cinzel', serif; font-size: 13px;
+    letter-spacing: 3px; color: var(--text-dim);
+    margin-top: 8px;
+  }
+  .levelup-lv {
+    font-family: 'Cinzel Decorative', serif; font-size: 16px;
+    color: var(--gold-light); letter-spacing: 2px; margin-top: 4px;
+  }
+
+  .skill-pick-grid {
+    display: flex; gap: 16px;
+    flex-wrap: wrap; justify-content: center;
+    max-width: 860px;
+  }
+
+  .skill-pick-card {
+    width: 230px;
+    background: linear-gradient(160deg, rgba(20,16,40,0.95), rgba(10,8,24,0.98));
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 16px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .skill-pick-card::before {
+    content: ''; position: absolute; inset: 0; opacity: 0;
+    transition: opacity 0.25s;
+    border-radius: 6px;
+  }
+  .skill-pick-card.fire::before   { background: radial-gradient(circle at 50% 0%, rgba(255,100,20,0.18), transparent 70%); }
+  .skill-pick-card.ice::before    { background: radial-gradient(circle at 50% 0%, rgba(100,200,255,0.18), transparent 70%); }
+  .skill-pick-card.lightning::before { background: radial-gradient(circle at 50% 0%, rgba(220,220,50,0.18), transparent 70%); }
+  .skill-pick-card.physical::before { background: radial-gradient(circle at 50% 0%, rgba(200,150,50,0.18), transparent 70%); }
+  .skill-pick-card.heal::before   { background: radial-gradient(circle at 50% 0%, rgba(50,200,100,0.18), transparent 70%); }
+  .skill-pick-card.dark::before   { background: radial-gradient(circle at 50% 0%, rgba(150,50,220,0.18), transparent 70%); }
+
+  .skill-pick-card:hover::before { opacity: 1; }
+  .skill-pick-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    border-color: var(--gold);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 20px rgba(201,168,76,0.2);
+  }
+
+  /* Top accent line per element */
+  .skill-pick-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    border-radius: 6px 6px 0 0;
+    opacity: 0.6;
+  }
+  .skill-pick-card.fire::after    { background: linear-gradient(90deg, transparent, #ff6614, transparent); }
+  .skill-pick-card.ice::after     { background: linear-gradient(90deg, transparent, #64c8ff, transparent); }
+  .skill-pick-card.lightning::after { background: linear-gradient(90deg, transparent, #dcdc32, transparent); }
+  .skill-pick-card.physical::after { background: linear-gradient(90deg, transparent, #c8963c, transparent); }
+  .skill-pick-card.heal::after    { background: linear-gradient(90deg, transparent, #32c864, transparent); }
+  .skill-pick-card.dark::after    { background: linear-gradient(90deg, transparent, #9632dc, transparent); }
+
+  .spc-icon { font-size: 40px; text-align: center; line-height: 1; }
+  .spc-name {
+    font-family: 'Cinzel', serif; font-size: 15px; font-weight: 600;
+    color: var(--gold-light); text-align: center; letter-spacing: 2px;
+  }
+  .spc-type {
+    font-family: 'Cinzel', serif; font-size: 9px;
+    letter-spacing: 3px; text-align: center; text-transform: uppercase;
+  }
+  .spc-type.fire { color: #ff8844; }
+  .spc-type.ice { color: #64c8ff; }
+  .spc-type.lightning { color: #dcdc32; }
+  .spc-type.physical { color: #c8963c; }
+  .spc-type.heal { color: #32c864; }
+  .spc-type.dark { color: #bb66ff; }
+
+  .spc-divider {
+    height: 1px; background: var(--border); margin: 2px 0;
+  }
+
+  .spc-stats {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+  }
+  .spc-stat {
+    font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-dim);
+  }
+  .spc-stat.dmg { color: #ff9944; border-color: rgba(255,153,68,0.3); }
+  .spc-stat.mp  { color: var(--sapphire-light); border-color: rgba(74,144,217,0.3); }
+  .spc-stat.heal { color: #32c864; border-color: rgba(50,200,100,0.3); }
+
+  .spc-desc {
+    font-size: 12px; color: var(--text-dim); text-align: center;
+    font-style: italic; line-height: 1.5;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  .spc-effect {
+    font-family: 'Cinzel', serif; font-size: 10px;
+    text-align: center; letter-spacing: 1px;
+    padding: 4px 8px;
+    border-radius: 2px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.2);
+    color: var(--gold-dim);
+  }
+
+  .spc-badge-new {
+    position: absolute; top: 10px; right: 10px;
+    font-family: 'Cinzel', serif; font-size: 8px;
+    letter-spacing: 2px; color: var(--gold);
+    padding: 2px 6px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+    background: rgba(201,168,76,0.1);
+  }
+  .spc-badge-upgrade {
+    position: absolute; top: 10px; right: 10px;
+    font-family: 'Cinzel', serif; font-size: 8px;
+    letter-spacing: 2px; color: #aa66ff;
+    padding: 2px 6px;
+    border: 1px solid rgba(170,102,255,0.4);
+    border-radius: 2px;
+    background: rgba(170,102,255,0.1);
+  }
+
+  .levelup-skip {
+    margin-top: 20px;
+    font-family: 'Cinzel', serif; font-size: 10px;
+    letter-spacing: 3px; color: var(--text-dim);
+    background: none; border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 20px; border-radius: 2px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .levelup-skip:hover { color: var(--text); border-color: var(--border); }
+
+  /* XP bar under player stats */
+  .xp-section { width: 180px; margin-top: 2px; }
+  .xp-track {
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 2px; overflow: hidden;
+  }
+  .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5a2080, #aa66ff);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* ── SKILL SLOTS (active skills display) ── */
+  .active-skills-bar {
+    display: flex; gap: 6px; align-items: center;
+    padding: 6px 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    position: relative;
+  }
+  .active-skills-bar::before {
+    content: 'SKILLS';
+    position: absolute; top: -8px; left: 12px;
+    font-family: 'Cinzel', serif; font-size: 9px;
+    color: var(--gold-dim); letter-spacing: 3px;
+    background: var(--bg-panel); padding: 0 4px;
+  }
+  .active-skill-slot {
+    width: 44px; height: 44px;
+    background: rgba(201,168,76,0.04);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1px;
+    cursor: pointer; transition: all 0.2s;
+    position: relative;
+  }
+  .active-skill-slot:hover:not(.disabled) {
+    border-color: rgba(201,168,76,0.5);
+    background: rgba(201,168,76,0.1);
+    transform: translateY(-2px);
+  }
+  .active-skill-slot.disabled { opacity: 0.3; cursor: not-allowed; }
+  .active-skill-slot.can-use {
+    border-color: rgba(201,168,76,0.4);
+    box-shadow: 0 0 8px rgba(201,168,76,0.15);
+  }
+  .asl-icon { font-size: 20px; line-height: 1; }
+  .asl-name { font-family: 'Cinzel', serif; font-size: 7px; color: var(--text-dim); letter-spacing: 0.5px; text-align: center; }
+  .asl-mp { font-family: 'Cinzel', serif; font-size: 8px; color: var(--sapphire-light); }
+
+  /* Victory / Defeat overlay */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 200;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s;
+  }
+  .overlay.active { opacity: 1; pointer-events: all; }
+  .overlay-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 48px; letter-spacing: 4px;
+    animation: pulse-glow 1.5s ease-in-out infinite;
+  }
+  .overlay.victory .overlay-title { color: var(--gold); }
+  .overlay.defeat .overlay-title { color: var(--crimson-light); }
+  @keyframes pulse-glow {
+    0%,100% { text-shadow: 0 0 20px currentColor; }
+    50% { text-shadow: 0 0 60px currentColor, 0 0 100px currentColor; }
+  }
+  .overlay-sub {
+    font-family: 'Cinzel', serif; font-size: 14px;
+    letter-spacing: 3px; color: var(--text-dim);
+    margin-top: 12px;
+  }
+  .overlay-rewards {
+    margin-top: 24px; display: flex; gap: 16px;
+  }
+  .reward-item {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 12px 20px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+  }
+  .reward-icon { font-size: 11px; font-family: 'Cinzel', serif; letter-spacing: 2px; color: var(--gold); font-weight: 700; }
+  .reward-label { font-size: 10px; color: var(--gold-dim); letter-spacing: 2px; }
+  .reward-value { font-size: 16px; color: var(--gold); }
+  .overlay-btn {
+    margin-top: 28px;
+    padding: 12px 40px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px; letter-spacing: 3px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .overlay-btn:hover { background: rgba(201,168,76,0.2); box-shadow: var(--shadow-gold); }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    #game { padding: 6px; gap: 6px; }
+    .skills-section { grid-template-columns: repeat(4,1fr); gap: 4px; }
+    .skill-btn { padding: 8px 4px; }
+    .skill-icon { font-size: 20px; }
+    .skill-name { font-size: 8px; }
+    .sprite { font-size: 54px; }
+    .hp-section, .mp-section { width: 140px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+
+<!-- GAME CONTAINER -->
+<div id="game">
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <span class="floor-info" id="floorInfo">FLOOR 1 — WHISPERING WOOD</span>
+    <span class="title-text">REALM OF ECHOES</span>
+    <span class="run-info" id="runInfo">RUN #1 · TURN 1</span>
+  </div>
+
+  <!-- Enemy info -->
+  <div class="enemy-info-bar">
+    <span class="floor-badge">ENCOUNTER</span>
+    <span id="enemyTagEl" class="enemy-tag normal-tag">NORMAL</span>
+    <span id="enemyDescEl" style="font-size:11px;color:var(--text-dim);font-family:'Crimson Pro',serif;flex:1;">A wandering creature blocks your path.</span>
+  </div>
+
+  <!-- Arena -->
+  <div class="arena">
+    <!-- Player -->
+    <div class="combatant player" id="playerCombatant">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div class="name-plate" id="playerName">Kael, the Wayfarer</div>
+        <div class="monster-type">WANDERING HERO</div>
+        <div class="hp-section">
+          <div class="hp-label">
+            <span class="label">HP</span>
+            <span class="value" id="playerHPText">80 / 80</span>
+          </div>
+          <div class="hp-track"><div class="hp-fill high" id="playerHPBar" style="width:100%"></div></div>
+        </div>
+        <div class="mp-section">
+          <div class="hp-label">
+            <span class="label" style="color:var(--sapphire-light);">MP</span>
+            <span class="value" id="playerMPText" style="color:var(--sapphire-light);">50 / 50</span>
+          </div>
+          <div class="mp-track"><div class="mp-fill" id="playerMPBar" style="width:100%"></div></div>
+        </div>
+        <div class="status-badges" id="playerBadges"></div>
+      </div>
+      <div class="sprite-wrap" style="margin-top:8px;">
+        <div class="sprite-aura"></div>
+        <span class="sprite" id="playerSprite"></span>
+      </div>
+    </div>
+
+    <!-- VS -->
+    <div class="vs-divider">
+      <div class="vs-line"></div>
+      <span class="vs-text">VS</span>
+      <div class="vs-line"></div>
+    </div>
+
+    <!-- Enemy -->
+    <div class="combatant enemy" id="enemyCombatant">
+      <div class="sprite-wrap" style="margin-bottom:8px;">
+        <div class="sprite-aura"></div>
+        <span class="sprite" id="enemySprite"></span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        <div class="name-plate" id="enemyName">Forest Drake</div>
+        <div class="monster-type" id="enemyType">BEAST · UNCOMMON</div>
+        <div class="hp-section">
+          <div class="hp-label">
+            <span class="label">HP</span>
+            <span class="value" id="enemyHPText">60 / 60</span>
+          </div>
+          <div class="hp-track"><div class="hp-fill high" id="enemyHPBar" style="width:100%"></div></div>
+        </div>
+        <div class="status-badges" id="enemyBadges" style="justify-content:flex-end;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Battle Log -->
+  <div class="log-panel" id="logPanel">
+    <div class="log-line latest" id="logLine1">The battle begins...</div>
+    <div class="log-line" id="logLine2"></div>
+  </div>
+
+  <!-- Turn indicator -->
+  <div class="turn-indicator" id="turnIndicator">YOUR TURN</div>
+
+  <!-- Command Input -->
+  <div class="command-section">
+    <div class="command-bar">
+      <span class="command-prompt">&gt;</span>
+      <input class="command-input" id="commandInput" type="text" maxlength="20" placeholder="พิมพ์ชื่อท่า หรือกดตัวอักษร..." autocomplete="off" spellcheck="false">
+      <span class="command-hint" id="cmdHint">PRESS ENTER</span>
+    </div>
+    <!-- Skills -->
+    <div class="skills-section" id="skillGrid"></div>
+  </div>
+
+  <!-- Bottom Row -->
+  <div class="bottom-row">
+    <div class="player-quick">
+      <div class="quick-stat">
+        <span class="quick-label">LVL</span>
+        <span class="quick-value lv" id="lvlVal">5</span>
+      </div>
+      <div class="quick-divider"></div>
+      <div class="quick-stat">
+        <span class="quick-label">ATK</span>
+        <span class="quick-value" id="atkVal">24</span>
+      </div>
+      <div class="quick-divider"></div>
+      <div class="quick-stat">
+        <span class="quick-label">DEF</span>
+        <span class="quick-value" id="defVal">12</span>
+      </div>
+      <div class="quick-divider"></div>
+      <div class="quick-stat">
+        <span class="quick-label">GOLD</span>
+        <span class="quick-value" style="color:var(--gold);" id="goldVal">142</span>
+      </div>
+      <div class="quick-divider"></div>
+      <div class="quick-stat">
+        <span class="quick-label">FLOOR</span>
+        <span class="quick-value" id="floorVal">1</span>
+      </div>
+    </div>
+    <div class="rune-slots">
+      <div class="rune-slot"><span class="tooltip">Rune of Clarity</span></div>
+      <div class="rune-slot"><span class="tooltip">Edge of Dawn</span></div>
+      <div class="rune-slot"><span class="tooltip">Iron Aegis</span></div>
+      <div class="rune-slot"><span class="tooltip">Soul Bead</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Level Up Overlay -->
+<div class="levelup-overlay" id="levelupOverlay">
+  <div class="levelup-header">
+    <div class="levelup-title">LEVEL UP</div>
+    <div class="levelup-sub">CHOOSE A NEW POWER</div>
+    <div class="levelup-lv" id="levelupLvText">LEVEL 6</div>
+  </div>
+  <div class="skill-pick-grid" id="skillPickGrid"></div>
+  <button class="levelup-skip" onclick="skipLevelUp()">SKIP →</button>
+</div>
+
+<!-- Overlays -->
+<div class="overlay victory" id="victoryOverlay">
+  <div class="overlay-title">VICTORY</div>
+  <div class="overlay-sub" id="victorySubtitle">THE FOE HAS FALLEN</div>
+  <div class="overlay-rewards" id="victoryRewards"></div>
+  <button class="overlay-btn" onclick="nextBattle()">CONTINUE →</button>
+</div>
+<div class="overlay defeat" id="defeatOverlay">
+  <div class="overlay-title">FALLEN</div>
+  <div class="overlay-sub">YOUR JOURNEY ENDS HERE...</div>
+  <div style="margin-top:16px;font-family:'Cinzel',serif;font-size:12px;color:var(--text-dim);letter-spacing:2px;" id="defeatStats"></div>
+  <button class="overlay-btn" onclick="restartGame()">BEGIN ANEW</button>
+</div>
+
+<script>
+// ── STAR GENERATION ──
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random() * 2 + 0.5;
+  s.style.cssText = `
+    left:${Math.random()*100}%;top:${Math.random()*100}%;
+    width:${size}px;height:${size}px;
+    --d:${2+Math.random()*4}s;
+    --o1:${0.1+Math.random()*0.5};
+    --o2:${0.5+Math.random()*0.5};
+    animation-delay:${Math.random()*4}s;
+  `;
+  starsEl.appendChild(s);
+}
+
+// ── GAME STATE ──
+const SKILLS = [
+  { id:'slash',      key:'A', name:'Slash',      icon:'ATK',  type:'physical',  baseDmg:[18,28], mpCost:0,  pips:0, desc:'Basic strike',      cooldown:0 },
+  { id:'fireball',   key:'S', name:'Fireball',   icon:'FIRE', type:'fire',      baseDmg:[30,45], mpCost:12, pips:2, desc:'Burn enemy',         cooldown:0, statusApply:{enemy:'burn',chance:0.4} },
+  { id:'frostbolt',  key:'D', name:'Frostbolt',  icon:'ICE',  type:'ice',       baseDmg:[22,32], mpCost:10, pips:2, desc:'Chance to Freeze',   cooldown:0, statusApply:{enemy:'freeze',chance:0.35} },
+  { id:'thunder',    key:'F', name:'Thunder',    icon:'LTG',  type:'lightning', baseDmg:[35,55], mpCost:18, pips:3, desc:'High damage magic',  cooldown:0, critBonus:0.2 },
+  { id:'heal',       key:'H', name:'Mend',       icon:'HEAL', type:'heal',      baseDmg:[0,0],   healAmt:[20,35], mpCost:14, pips:2, desc:'Restore HP', cooldown:0 },
+  { id:'shadowbolt', key:'J', name:'Shadowbolt', icon:'DRK',  type:'dark',      baseDmg:[28,42], mpCost:15, pips:3, desc:'Reduces enemy DEF', cooldown:0, statusApply:{enemy:'weaken',chance:0.5} },
+  { id:'shield',     key:'K', name:'Barrier',    icon:'DEF',  type:'physical',  baseDmg:[0,0],   mpCost:8,  pips:1, desc:'Apply Shield',       cooldown:0, selfStatus:'shield' },
+  { id:'rend',       key:'L', name:'Rend',       icon:'BLD',  type:'physical',  baseDmg:[25,38], mpCost:6,  pips:1, desc:'Causes Bleed',       cooldown:0, statusApply:{enemy:'poison',chance:0.5} },
+];
+
+const MONSTERS = [
+  { name:'Forest Sprite', sprite:'', type:'SPIRIT · COMMON', hp:45, atk:10, def:4, xp:20, gold:[8,18], desc:'A mischievous fairy lurking in the woods.', tag:'normal', statusAttacks:[] },
+  { name:'Forest Drake', sprite:'', type:'BEAST · UNCOMMON', hp:60, atk:16, def:8, xp:35, gold:[15,30], desc:'A young drake with flickering emerald flames.', tag:'normal', statusAttacks:['burn'] },
+  { name:'Stone Golem', sprite:'', type:'CONSTRUCT · RARE', hp:90, atk:20, def:16, xp:55, gold:[25,45], desc:'Ancient guardian of crumbling ruins.', tag:'elite', statusAttacks:[] },
+  { name:'Shadow Wraith', sprite:'', type:'UNDEAD · UNCOMMON', hp:50, atk:18, def:5, xp:40, gold:[20,35], desc:'A vengeful spirit drifting between realms.', tag:'normal', statusAttacks:['poison'] },
+  { name:'Thunder Eagle', sprite:'', type:'BEAST · UNCOMMON', hp:55, atk:22, def:6, xp:42, gold:[18,32], desc:'Its wings crackle with storm energy.', tag:'normal', statusAttacks:[] },
+  { name:'Ember Salamander', sprite:'', type:'ELEMENTAL · RARE', hp:65, atk:19, def:10, xp:50, gold:[22,40], desc:'Born in volcanic vents, it breathes liquid fire.', tag:'elite', statusAttacks:['burn'] },
+  { name:'Demon Knight', sprite:'', type:'DEMON · BOSS', hp:120, atk:28, def:14, xp:120, gold:[60,100], desc:'A fallen champion, consumed by infernal rage.', tag:'boss', statusAttacks:['burn','rage'] },
+  { name:'Ancient Lich', sprite:'', type:'UNDEAD · BOSS', hp:110, atk:32, def:10, xp:140, gold:[80,120], desc:'The death-lord who commands legions of the damned.', tag:'boss', statusAttacks:['poison','freeze'] },
+  { name:'Sea Serpent', sprite:'', type:'BEAST · UNCOMMON', hp:58, atk:15, def:9, xp:38, gold:[16,28], desc:'A massive sea serpent prowling the foggy shores.', tag:'normal', statusAttacks:['poison'] },
+  { name:'Frost Phoenix', sprite:'', type:'ELEMENTAL · RARE', hp:70, atk:24, def:8, xp:60, gold:[28,50], desc:'A radiant bird reborn in sheets of ice.', tag:'elite', statusAttacks:['freeze'] },
+];
+
+const state = {
+  player: { name:'Kael, the Wayfarer', sprite:'🧙', hp:80, maxHp:80, mp:50, maxMp:50, atk:24, def:12, lv:5, xp:0, xpNext:100, gold:142, statuses:[] },
+  enemy: null,
+  turn: 'player',
+  turnCount: 1,
+  floor: 1,
+  battleCount: 0,
+  log: ['The battle begins...', ''],
+  busy: false,
+  skillCDs: {},
+};
+
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
+
+function spawnEnemy() {
+  let pool = MONSTERS.filter(m => {
+    if (state.floor <= 2) return m.tag === 'normal';
+    if (state.floor <= 4) return m.tag !== 'boss';
+    return true;
+  });
+  // Force boss on floor 5
+  if (state.floor === 5) pool = MONSTERS.filter(m => m.tag === 'boss');
+  const tpl = pool[rand(0, pool.length - 1)];
+  const scale = 1 + (state.floor - 1) * 0.18;
+  state.enemy = {
+    ...tpl,
+    hp: Math.floor(tpl.hp * scale),
+    maxHp: Math.floor(tpl.hp * scale),
+    atk: Math.floor(tpl.atk * scale),
+    def: Math.floor(tpl.def * scale),
+    statuses: [],
+    xp: Math.floor(tpl.xp * scale),
+    gold: tpl.gold,
+  };
+}
+
+// ── RENDER ──
+function render() {
+  const p = state.player, e = state.enemy;
+  // Player HP
+  document.getElementById('playerHPText').textContent = `${p.hp} / ${p.maxHp}`;
+  const pHPPct = p.hp / p.maxHp * 100;
+  const pBar = document.getElementById('playerHPBar');
+  pBar.style.width = pHPPct + '%';
+  pBar.className = 'hp-fill ' + (pHPPct > 60 ? 'high' : pHPPct > 30 ? 'mid' : 'low');
+  // Player MP
+  document.getElementById('playerMPText').textContent = `${p.mp} / ${p.maxMp}`;
+  document.getElementById('playerMPBar').style.width = (p.mp / p.maxMp * 100) + '%';
+  // Enemy HP
+  if (e) {
+    document.getElementById('enemyHPText').textContent = `${e.hp} / ${e.maxHp}`;
+    const eHPPct = e.hp / e.maxHp * 100;
+    const eBar = document.getElementById('enemyHPBar');
+    eBar.style.width = eHPPct + '%';
+    eBar.className = 'hp-fill ' + (eHPPct > 60 ? 'high' : eHPPct > 30 ? 'mid' : 'low');
+    document.getElementById('enemyName').textContent = e.name;
+    document.getElementById('enemyType').textContent = e.type;
+    document.getElementById('enemySprite').textContent = e.sprite;
+  }
+  // Stats
+  document.getElementById('lvlVal').textContent = p.lv;
+  document.getElementById('atkVal').textContent = p.atk;
+  document.getElementById('defVal').textContent = p.def;
+  document.getElementById('goldVal').textContent = p.gold;
+  document.getElementById('floorVal').textContent = state.floor;
+  document.getElementById('floorInfo').textContent = `FLOOR ${state.floor} — ${['','WHISPERING WOOD','DUSTY RUINS','SHADOWED CAVERN','DEMON STRONGHOLD','THRONE OF ASHES'][Math.min(state.floor,5)]}`;
+  document.getElementById('runInfo').textContent = `RUN #1 · TURN ${state.turnCount}`;
+  // Enemy tag
+  const tagEl = document.getElementById('enemyTagEl');
+  if (e) {
+    tagEl.className = 'enemy-tag ' + (e.tag === 'boss' ? 'boss-tag' : e.tag === 'elite' ? 'elite-tag' : 'normal-tag');
+    tagEl.textContent = e.tag === 'boss' ? 'BOSS' : e.tag === 'elite' ? 'ELITE' : 'NORMAL';
+    document.getElementById('enemyDescEl').textContent = e.desc;
+  }
+  // Turn indicator
+  const ti = document.getElementById('turnIndicator');
+  ti.textContent = state.turn === 'player' ? 'YOUR TURN' : 'ENEMY TURN';
+  ti.className = 'turn-indicator' + (state.turn !== 'player' ? ' enemy-turn' : '');
+  // Statuses
+  renderBadges('playerBadges', p.statuses);
+  if (e) renderBadges('enemyBadges', e.statuses);
+  // Skills
+  renderSkills();
+  // Log
+  renderLog();
+}
+
+function renderBadges(id, statuses) {
+  const el = document.getElementById(id);
+  el.innerHTML = statuses.map(s => {
+    const map = { burn:'BURN', poison:'POISON', shield:'SHIELD', freeze:'FREEZE', rage:'RAGE', weaken:'WEAK' };
+    return `<span class="badge ${s.type}">${map[s.type]||s.type} ${s.turns}</span>`;
+  }).join('');
+}
+
+function renderSkills() {
+  const grid = document.getElementById('skillGrid');
+  const p = state.player;
+  const isPlayerTurn = state.turn === 'player' && !state.busy;
+  grid.innerHTML = SKILLS.map(sk => {
+    const canUse = isPlayerTurn && p.mp >= sk.mpCost;
+    return `<div class="skill-btn ${sk.type}${canUse ? '' : ' disabled-skill'}" id="skillCard_${sk.id}">
+      <span class="skill-key">${sk.key}</span>
+      <span class="skill-name">${sk.name}</span>
+      <span class="skill-dmg">${sk.healAmt ? `+${sk.healAmt[0]}-${sk.healAmt[1]}` : sk.baseDmg[0] > 0 ? `${sk.baseDmg[0]}-${sk.baseDmg[1]}` : sk.desc}</span>
+      <div class="mp-pips">${Array(sk.pips).fill('<div class="mp-pip"></div>').join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function highlightSkillCard(id) {
+  SKILLS.forEach(sk => {
+    const el = document.getElementById('skillCard_' + sk.id);
+    if (el) el.classList.remove('active');
+  });
+  if (id) {
+    const el = document.getElementById('skillCard_' + id);
+    if (el) el.classList.add('active');
+  }
+}
+
+// ── KEYBOARD & INPUT HANDLING ──
+function setupInput() {
+  const input = document.getElementById('commandInput');
+  const hint = document.getElementById('cmdHint');
+
+  // Single-key press anywhere on page (when not focused on input)
+  document.addEventListener('keydown', (e) => {
+    if (state.busy || state.turn !== 'player') return;
+    const key = e.key.toUpperCase();
+    // If user presses a skill key directly (not in input), fire it
+    if (document.activeElement !== input) {
+      const sk = SKILLS.find(s => s.key === key);
+      if (sk) { e.preventDefault(); triggerSkill(sk); return; }
+    }
+    // Focus input on any letter key
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+      input.focus();
+    }
+  });
+
+  // Input field: highlight matching skill as you type
+  input.addEventListener('input', () => {
+    if (state.busy || state.turn !== 'player') { input.value = ''; return; }
+    const val = input.value.toUpperCase().trim();
+
+    // Check single key match
+    const skByKey = SKILLS.find(s => s.key === val);
+    if (skByKey && document.activeElement === input) {
+      highlightSkillCard(skByKey.id);
+      hint.textContent = skByKey.name.toUpperCase();
+      return;
+    }
+    // Check name match (partial)
+    const skByName = SKILLS.find(s => s.name.toUpperCase().startsWith(val) && val.length > 0);
+    if (skByName) {
+      highlightSkillCard(skByName.id);
+      hint.textContent = skByName.name.toUpperCase();
+    } else {
+      highlightSkillCard(null);
+      hint.textContent = 'PRESS ENTER';
+    }
+  });
+
+  // Enter to confirm
+  input.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    if (state.busy || state.turn !== 'player') { input.value = ''; return; }
+    const val = input.value.toUpperCase().trim();
+    const sk = SKILLS.find(s => s.key === val || s.name.toUpperCase() === val || s.name.toUpperCase().startsWith(val));
+    if (sk) {
+      input.value = '';
+      hint.textContent = 'PRESS ENTER';
+      highlightSkillCard(null);
+      triggerSkill(sk);
+    } else {
+      hint.textContent = 'UNKNOWN COMMAND';
+      input.style.color = '#ff4444';
+      setTimeout(() => { input.style.color = ''; hint.textContent = 'PRESS ENTER'; }, 600);
+      input.value = '';
+    }
+  });
+
+  // Direct single key in input: if exactly 1 char matches a key, fire immediately
+  input.addEventListener('keyup', (e) => {
+    if (state.busy || state.turn !== 'player') return;
+    const val = input.value.toUpperCase().trim();
+    if (val.length === 1) {
+      const sk = SKILLS.find(s => s.key === val);
+      if (sk) {
+        input.value = '';
+        hint.textContent = 'PRESS ENTER';
+        highlightSkillCard(null);
+        triggerSkill(sk);
+      }
+    }
+  });
+}
+
+function triggerSkill(sk) {
+  const p = state.player;
+  if (p.mp < sk.mpCost) {
+    const hint = document.getElementById('cmdHint');
+    hint.textContent = 'NOT ENOUGH MP';
+    hint.style.color = '#4a90d9';
+    setTimeout(() => { hint.textContent = 'PRESS ENTER'; hint.style.color = ''; }, 800);
+    return;
+  }
+  useSkill(sk.id);
+}
+
+function renderLog() {
+  document.getElementById('logLine1').innerHTML = state.log[0] || '';
+  const l2 = document.getElementById('logLine2');
+  l2.innerHTML = state.log[1] || '';
+  l2.className = 'log-line';
+}
+
+function pushLog(msg) {
+  state.log[1] = state.log[0];
+  state.log[0] = msg;
+  document.getElementById('logLine1').innerHTML = msg;
+  document.getElementById('logLine1').className = 'log-line latest';
+  const l2 = document.getElementById('logLine2');
+  l2.innerHTML = state.log[1] || '';
+  l2.className = 'log-line';
+}
+
+// ── DAMAGE FLOATER ──
+function showDmgFloat(el, text, type) {
+  const rect = el.getBoundingClientRect();
+  const div = document.createElement('div');
+  div.className = `damage-float ${type}`;
+  div.textContent = text;
+  div.style.left = (rect.left + rect.width/2 - 20) + 'px';
+  div.style.top = (rect.top - 10) + 'px';
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 1000);
+}
+
+// ── COMBAT ──
+function calcDamage(atk, def, skill) {
+  let base = rand(skill.baseDmg[0], skill.baseDmg[1]);
+  let dmg = Math.max(1, Math.round(base * (atk / 24) * (10 / (10 + def))));
+  let isCrit = Math.random() < (0.1 + (skill.critBonus || 0));
+  if (isCrit) dmg = Math.round(dmg * 1.8);
+  return { dmg, isCrit };
+}
+
+function applyStatus(target, type, turns) {
+  const existing = target.statuses.find(s => s.type === type);
+  if (existing) { existing.turns = Math.max(existing.turns, turns); return; }
+  target.statuses.push({ type, turns });
+}
+
+function tickStatuses(target) {
+  let msgs = [];
+  target.statuses = target.statuses.map(s => {
+    if (s.type === 'burn') {
+      const tickDmg = rand(5, 10);
+      target.hp = Math.max(0, target.hp - tickDmg);
+      msgs.push(`<span class="name">${target.name||'Enemy'}</span> burns for <span class="dmg">${tickDmg}</span> dmg!`);
+    }
+    if (s.type === 'poison') {
+      const tickDmg = rand(4, 8);
+      target.hp = Math.max(0, target.hp - tickDmg);
+      msgs.push(`<span class="name">${target.name||'Enemy'}</span> takes <span class="magic">${tickDmg}</span> poison dmg!`);
+    }
+    return { ...s, turns: s.turns - 1 };
+  }).filter(s => s.turns > 0);
+  return msgs;
+}
+
+async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function useSkill(id) {
+  if (state.busy || state.turn !== 'player') return;
+  const sk = SKILLS.find(s => s.id === id);
+  if (!sk) return;
+  const p = state.player, e = state.enemy;
+  if (p.mp < sk.mpCost) return;
+
+  state.busy = true;
+  p.mp -= sk.mpCost;
+
+  // Heal skill
+  if (sk.healAmt) {
+    const healAmt = rand(sk.healAmt[0], sk.healAmt[1]);
+    p.hp = Math.min(p.maxHp, p.hp + healAmt);
+    pushLog(`<span class="name">Kael</span> uses ${sk.icon} ${sk.name} — restores <span class="heal">+${healAmt} HP</span>!`);
+    showDmgFloat(document.getElementById('playerSprite'), `+${healAmt}`, 'heal');
+    render();
+    await sleep(600);
+  }
+  // Shield skill
+  else if (sk.selfStatus) {
+    applyStatus(p, sk.selfStatus, 3);
+    pushLog(`<span class="name">Kael</span> raises a ${sk.icon} <span class="magic">Barrier</span>!`);
+    render();
+    await sleep(600);
+  }
+  // Attack skill
+  else if (sk.baseDmg[1] > 0) {
+    const spriteEl = document.getElementById('playerSprite');
+    const enemyEl = document.getElementById('enemySprite');
+    spriteEl.classList.add('attack-anim');
+    await sleep(400);
+    spriteEl.classList.remove('attack-anim');
+
+    const { dmg, isCrit } = calcDamage(p.atk, e.def, sk);
+
+    // Shield check enemy (if enemy somehow has shield... skip for now)
+    e.hp = Math.max(0, e.hp - dmg);
+    const floatType = isCrit ? 'critical' : sk.type === 'physical' ? 'physical' : 'magic';
+    showDmgFloat(enemyEl, isCrit ? `${dmg}!!` : dmg, floatType);
+    enemyEl.classList.add('hurt-anim');
+    setTimeout(() => enemyEl.classList.remove('hurt-anim'), 300);
+
+    const critText = isCrit ? ' <span class="crit">⚡ CRITICAL!</span>' : '';
+    pushLog(`<span class="name">Kael</span> uses ${sk.icon} ${sk.name} — <span class="dmg">${dmg} dmg</span> to <span class="name">${e.name}</span>!${critText}`);
+
+    // Apply status effects
+    if (sk.statusApply && Math.random() < sk.statusApply.chance) {
+      applyStatus(e, sk.statusApply.enemy, 3);
+      const sMap = { burn:'Burns', poison:'Poisons', freeze:'Freezes', weaken:'Weakens' };
+      pushLog(`${sMap[sk.statusApply.enemy]||'Afflicts'} <span class="name">${e.name}</span>!`);
+    }
+
+    render();
+    await sleep(300);
+
+    // Check enemy death
+    if (e.hp <= 0) {
+      state.busy = false;
+      await sleep(200);
+      showVictory();
+      return;
+    }
+  }
+
+  // Switch to enemy turn
+  state.turn = 'enemy';
+  state.turnCount++;
+  render();
+  await sleep(700);
+
+  // Tick statuses on enemy
+  const eTicks = tickStatuses(e);
+  for (const msg of eTicks) { pushLog(msg); render(); await sleep(300); }
+  if (e.hp <= 0) { state.busy = false; showVictory(); return; }
+
+  // Enemy action
+  await enemyAction();
+}
+
+async function enemyAction() {
+  const p = state.player, e = state.enemy;
+  const spriteEl = document.getElementById('enemySprite');
+  const playerEl = document.getElementById('playerSprite');
+
+  // Random flavor: sometimes apply status
+  const willStatus = e.statusAttacks.length > 0 && Math.random() < 0.3;
+  const hasFrozen = p.statuses.find(s => s.type === 'freeze');
+
+  spriteEl.classList.add('enemy-attack-anim');
+  await sleep(400);
+  spriteEl.classList.remove('enemy-attack-anim');
+
+  // Check if player has shield
+  const shieldSt = p.statuses.find(s => s.type === 'shield');
+
+  let dmg = rand(Math.floor(e.atk * 0.8), Math.floor(e.atk * 1.2));
+  dmg = Math.max(1, dmg - Math.floor(p.def * 0.5));
+
+  if (shieldSt) {
+    // Shield absorbs
+    dmg = Math.max(0, dmg - 8);
+    p.statuses = p.statuses.filter(s => s.type !== 'shield');
+    pushLog(`Shield absorbs the blow — <span class="name">Kael</span> takes reduced damage!`);
+  }
+
+  if (willStatus && e.statusAttacks.length > 0) {
+    const sType = e.statusAttacks[rand(0, e.statusAttacks.length - 1)];
+    applyStatus(p, sType, 3);
+    const sMap = { burn:'Burns', poison:'Poisons', freeze:'Freezes', rage:'Enrages' };
+    pushLog(`<span class="name">${e.name}</span> ${sMap[sType]||'afflicts'} <span class="name">Kael</span>!`);
+  }
+
+  p.hp = Math.max(0, p.hp - dmg);
+  showDmgFloat(playerEl, dmg, 'physical');
+  playerEl.classList.add('hurt-anim');
+  setTimeout(() => playerEl.classList.remove('hurt-anim'), 300);
+  pushLog(`<span class="name">${e.name}</span> attacks — <span class="dmg">${dmg} dmg</span> to <span class="name">Kael</span>!`);
+
+  // Tick player statuses
+  const pTicks = tickStatuses(p);
+  for (const msg of pTicks) { await sleep(200); pushLog(msg); }
+
+  // MP regen
+  p.mp = Math.min(p.maxMp, p.mp + 6);
+
+  state.turn = 'player';
+  state.busy = false;
+
+  if (p.hp <= 0) { showDefeat(); return; }
+  render();
+}
+
+// ── VICTORY / DEFEAT ──
+function showVictory() {
+  const e = state.enemy;
+  const xpGained = e.xp;
+  const goldGained = rand(e.gold[0], e.gold[1]);
+  state.player.gold += goldGained;
+  state.player.xp += xpGained;
+  // Level up check
+  let lvUp = '';
+  if (state.player.xp >= state.player.xpNext) {
+    state.player.lv++;
+    state.player.xp -= state.player.xpNext;
+    state.player.xpNext = Math.floor(state.player.xpNext * 1.4);
+    state.player.maxHp += 12; state.player.hp = state.player.maxHp;
+    state.player.maxMp += 6; state.player.mp = state.player.maxMp;
+    state.player.atk += 4; state.player.def += 2;
+    lvUp = ' · LEVEL UP!';
+  }
+  const ov = document.getElementById('victoryOverlay');
+  document.getElementById('victorySubtitle').textContent = `${e.name.toUpperCase()} DEFEATED${lvUp}`;
+  document.getElementById('victoryRewards').innerHTML = `
+    <div class="reward-item"><span class="reward-icon">EXP</span><span class="reward-label">EXPERIENCE</span><span class="reward-value">+${xpGained}</span></div>
+    <div class="reward-item"><span class="reward-icon">GOLD</span><span class="reward-label">GOLD</span><span class="reward-value">+${goldGained}</span></div>
+    <div class="reward-item"><span class="reward-icon">FLR</span><span class="reward-label">FLOOR</span><span class="reward-value">${state.floor}</span></div>
+  `;
+  ov.classList.add('active');
+}
+
+function showDefeat() {
+  document.getElementById('defeatStats').textContent = `FLOOR ${state.floor} · TURN ${state.turnCount} · GOLD EARNED: ${state.player.gold}`;
+  document.getElementById('defeatOverlay').classList.add('active');
+}
+
+function nextBattle() {
+  document.getElementById('victoryOverlay').classList.remove('active');
+  state.battleCount++;
+  if (state.battleCount % 3 === 0) state.floor++;
+  // Reset player statuses, regen some HP/MP
+  state.player.statuses = [];
+  state.player.hp = Math.min(state.player.maxHp, state.player.hp + Math.floor(state.player.maxHp * 0.3));
+  state.player.mp = Math.min(state.player.maxMp, state.player.mp + 15);
+  state.turn = 'player';
+  state.turnCount = 1;
+  state.busy = false;
+  state.log = ['A new foe emerges...', ''];
+  spawnEnemy();
+  render();
+}
+
+function restartGame() {
+  document.getElementById('defeatOverlay').classList.remove('active');
+  Object.assign(state, {
+    player: { name:'Kael, the Wayfarer', sprite:'', hp:80, maxHp:80, mp:50, maxMp:50, atk:24, def:12, lv:5, xp:0, xpNext:100, gold:142, statuses:[] },
+    enemy: null, turn:'player', turnCount:1, floor:1, battleCount:0,
+    log:['The journey begins anew...',''], busy:false, skillCDs:{},
+  });
+  spawnEnemy();
+  render();
+}
+
+// ── INIT ──
+spawnEnemy();
+render();
+</script>
+</body>
+</html>
