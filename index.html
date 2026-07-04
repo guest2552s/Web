@@ -13,7 +13,7 @@
         /* ส่วนนี้คือ CSS ใช้จัดหน้าตา/สไตล์ของหน้าเว็บ */
         body {
             margin: 0;                     /* ลบขอบว่างรอบหน้าเว็บ */
-            background-color: #222;        /* สีพื้นหลังหน้าเว็บเป็นเทาเข้ม */
+            background-color: #1f1f25;        /* สีพื้นหลังหน้าเว็บเป็นเทาเข้ม */
             display: flex;                 /* ใช้ flexbox จัดตำแหน่ง */
             justify-content: flex-start;       /* จัดกึ่งกลางแนวนอน */
             align-items: flex-start;           /* จัดกึ่งกลางแนวตั้ง */
@@ -29,7 +29,7 @@
 </head>
 <body>
 
-    <canvas id="gameCanvas" width="1920" height="400"></canvas>
+    <canvas id="gameCanvas" width="700" height="400"></canvas>
     <!-- พื้นที่วาดภาพ/เกม กำหนด id ไว้เรียกใช้ใน JavaScript ขนาด 400x400 พิกเซล -->
 
     <script>
@@ -59,7 +59,7 @@
 
         let currentBg = 0;
         let bgTimer = 0;
-        const bgSpeed = 30;
+        const bgSpeed = 80;
 // ===============================
 
         // ตั้งค่าขนาดพิกเซลของตัวละคร (สมมุติตอนวาดมาเฟรมละ 32x32 พิกเซล)
@@ -69,9 +69,9 @@
         // ความสูงของภาพ 1 เฟรม
 
         // ข้อมูลของตัวละครและการเคลื่อนไหว
-        let playerX = 100;
+        let playerX = 300;
         // ตำแหน่งตัวละครบนแกน X (แนวนอน) บน canvas
-        let playerY = 100;
+        let playerY = 200;
         // ตำแหน่งตัวละครบนแกน Y (แนวตั้ง) บน canvas
 
         let currentFrame = 0;
@@ -80,7 +80,7 @@
         // จำนวนเฟรมทั้งหมดที่มีใน sprite sheet (มี 3 ท่า)
         let frameTimer = 0;
         // ตัวนับเฟรม (รอบของ requestAnimationFrame) เพื่อหน่วงเวลาสลับภาพ
-        const frameSpeed = 13;
+        const frameSpeed = 20;
         // ต้องนับครบกี่รอบถึงจะเปลี่ยนเฟรม (ยิ่งน้อย = สลับไว, ยิ่งมาก = สลับช้า)
 
         function gameLoop() {
