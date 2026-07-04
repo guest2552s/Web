@@ -48,6 +48,19 @@
 
         playerSheet.src = 'pixilart-sprite.png';
         // กำหนดไฟล์รูปที่จะโหลด (ต้องอยู่โฟลเดอร์เดียวกับไฟล์ html นี้)
+        // ===== Animated Background =====
+        const backgrounds = [];
+
+        for (let i = 1; i <= 3; i++) {
+        const bg = new Image();
+        bg.src = `bg${i}.png`;
+        backgrounds.push(bg);
+        }
+
+        let currentBg = 0;
+        let bgTimer = 0;
+        const bgSpeed = 30;
+// ===============================
 
         // ตั้งค่าขนาดพิกเซลของตัวละคร (สมมุติตอนวาดมาเฟรมละ 32x32 พิกเซล)
         const frameWidth = 64;
@@ -75,6 +88,24 @@
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             // ล้างภาพเก่าทั้งหมดบน canvas ก่อนวาดใหม่ (ไม่งั้นภาพจะซ้อนทับกันเลอะ)
+            // ===== Draw Animated Background =====
+            bgTimer++;
+
+            if (bgTimer >= bgSpeed) {
+               currentBg = (currentBg + 1) % backgrounds.length;
+               bgTimer = 0;
+             }
+
+             if (backgrounds[currentBg].complete) {
+               ctx.drawImage(
+               backgrounds[currentBg],
+               0,
+               0,
+               canvas.width,
+               canvas.height
+             );
+           }
+         // ====================================
 
             // 2. คำนวณเพื่อสลับเฟรมภาพเคลื่อนไหว
             frameTimer++;
@@ -117,16 +148,7 @@
         }
 
         playerSheet.onload = function() {
-            // ฟังก์ชันนี้จะถูกเรียกอัตโนมัติ "เมื่อรูปโหลดเสร็จแล้วเท่านั้น"
-
-            const backgrounds = [];
-
-for (let i = 1; i <= 3; i++) {
-    const bg = new Image();
-    bg.src = `bg${i}.png`;   // Loads bg1.png, bg2.png, bg3.png
-    backgrounds.push(bg);
-}
-            
+            // ฟังก์ชันนี้จะถูกเรียกอัตโนมัติ "เมื่อรูปโหลดเสร็จแล้วเท่านั้น"        
             gameLoop();
             // เริ่มต้นลูปเกมครั้งแรก
         };
