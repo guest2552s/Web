@@ -10,6 +10,30 @@
     <title>My Pixel Art Game</title>
     <!-- ข้อความที่จะแสดงบนแท็บของเบราว์เซอร์ -->
     <style>
+
+    #playButton {
+        position: absolute;
+
+        left: 250px;
+        top: 430px;
+
+        width: 200px;
+        height: 60px;
+
+        font-size: 24px;
+        cursor: pointer;
+
+        border: none;
+        border-radius: 10px;
+
+        background: #4CAF50;
+        color: white;
+    }
+
+    #playButton:hover {
+        background: #45a049;
+    }
+        
         /* ส่วนนี้คือ CSS ใช้จัดหน้าตา/สไตล์ของหน้าเว็บ */
         body {
             margin: 0;                     /* ลบขอบว่างรอบหน้าเว็บ */
@@ -30,6 +54,10 @@
 <body>
 
     <canvas id="gameCanvas" width="700" height="400"></canvas>
+
+    <button id="playButton" onclick="window.location.href='game/'">
+    Play
+    </button>
     <!-- พื้นที่วาดภาพ/เกม กำหนด id ไว้เรียกใช้ใน JavaScript ขนาด 400x400 พิกเซล -->
 
     <script>
