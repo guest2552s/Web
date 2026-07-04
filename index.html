@@ -118,6 +118,15 @@
 
         playerSheet.onload = function() {
             // ฟังก์ชันนี้จะถูกเรียกอัตโนมัติ "เมื่อรูปโหลดเสร็จแล้วเท่านั้น"
+
+            const backgrounds = [];
+
+for (let i = 1; i <= 3; i++) {
+    const bg = new Image();
+    bg.src = `bg${i}.png`;   // Loads bg1.png, bg2.png, bg3.png
+    backgrounds.push(bg);
+}
+            
             gameLoop();
             // เริ่มต้นลูปเกมครั้งแรก
         };
