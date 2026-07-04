@@ -48,19 +48,21 @@
 
         playerSheet.src = 'pixilart-sprite.png';
         // กำหนดไฟล์รูปที่จะโหลด (ต้องอยู่โฟลเดอร์เดียวกับไฟล์ html นี้)
-        // ===== Animated Background =====
-        const backgrounds = [];
+        // ===== Animated Background (Sprite Sheet) =====
+        const bgSheet = new Image();
+        bgSheet.src = "IMG_0052.png";
 
-        for (let i = 1; i <= 3; i++) {
-        const bg = new Image();
-        bg.src = `bg${i}.png`;
-        backgrounds.push(bg);
-        }
+        const bgFrameWidth = 256;
+        const bgFrameHeight = 256;
 
-        let currentBg = 0;
-        let bgTimer = 0;
-        const bgSpeed = 80;
-// ===============================
+        const bgColumns = 4;
+        const bgRows = 3;
+        const bgTotalFrames = 12;
+
+        let bgCurrentFrame = 0;
+        let bgFrameTimer = 0;
+        const bgFrameSpeed = 8; // lower = faster
+    // =============================================
 
         // ตั้งค่าขนาดพิกเซลของตัวละคร (สมมุติตอนวาดมาเฟรมละ 32x32 พิกเซล)
         const frameWidth = 64;
@@ -89,23 +91,33 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             // ล้างภาพเก่าทั้งหมดบน canvas ก่อนวาดใหม่ (ไม่งั้นภาพจะซ้อนทับกันเลอะ)
             // ===== Draw Animated Background =====
-            bgTimer++;
+            if (bgSheet.complete) {
 
-            if (bgTimer >= bgSpeed) {
-               currentBg = (currentBg + 1) % backgrounds.length;
-               bgTimer = 0;
-             }
+            bgFrameTimer++;
 
-             if (backgrounds[currentBg].complete) {
-               ctx.drawImage(
-               backgrounds[currentBg],
-               0,
-               0,
-               canvas.width,
-               canvas.height
-             );
-           }
-         // ====================================
+            if (bgFrameTimer >= bgFrameSpeed) {
+                bgCurrentFrame = (bgCurrentFrame + 1) % bgTotalFrames;
+                bgFrameTimer = 0;
+            }
+
+            const bgX = (bgCurrentFrame % bgColumns) * bgFrameWidth;
+            const bgY = Math.floor(bgCurrentFrame / bgColumns) * bgFrameHeight;
+
+            ctx.drawImage(
+                bgSheet,
+
+                bgX,
+                bgY,
+                bgFrameWidth,
+                bgFrameHeight,
+
+                0,
+                0,
+                canvas.width,
+                canvas.height
+                );
+            }
+        // ====================================
 
             // 2. คำนวณเพื่อสลับเฟรมภาพเคลื่อนไหว
             frameTimer++;
