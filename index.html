@@ -1,18 +1,13 @@
 <!DOCTYPE html>
-<!-- บอกเบราว์เซอร์ว่านี่คือเอกสาร HTML5 -->
 <html lang="th">
-<!-- เริ่มต้นเอกสาร HTML กำหนดภาษาเป็นไทย -->
 <head>
     <meta charset="UTF-8">
-    <!-- กำหนดการเข้ารหัสตัวอักษรเป็น UTF-8 เพื่อให้แสดงภาษาไทย/อังกฤษได้ถูกต้อง -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- ปรับการแสดงผลให้เหมาะกับขนาดหน้าจอมือถือ/แท็บเล็ต -->
     <title>My Pixel Art Game</title>
-    <!-- ข้อความที่จะแสดงบนแท็บของเบราว์เซอร์ -->
     <style>
         /* ส่วนนี้คือ CSS ใช้จัดหน้าตา/สไตล์ของหน้าเว็บ */
         body {
-            margin: 0;                     /* ลบขอบว่างรอบหน้าเว็บ */
+            margin: 0;                    /* ลบขอบว่างรอบหน้าเว็บ */
             background-color: #222;        /* สีพื้นหลังหน้าเว็บเป็นเทาเข้ม */
             display: flex;                 /* ใช้ flexbox จัดตำแหน่ง */
             justify-content: flex-start;       /* จัดกึ่งกลางแนวนอน */
@@ -30,8 +25,6 @@
 <body>
 
     <canvas id="gameCanvas" width="1920" height="400"></canvas>
-    <!-- พื้นที่วาดภาพ/เกม กำหนด id ไว้เรียกใช้ใน JavaScript ขนาด 400x400 พิกเซล -->
-
     <script>
         // ส่วนนี้คือ JavaScript ใช้ควบคุมการทำงานของเกม
 
@@ -42,115 +35,94 @@
         // ขอ "เครื่องมือวาดภาพ 2 มิติ" จาก canvas เก็บไว้ในตัวแปร ctx
         // ทุกคำสั่งวาดภาพจะเรียกผ่าน ctx
 
-        // 1. โหลดไฟล์ Sprite Sheet
+        // 1. โหลดไฟล์ Sprite Sheet ตัวละคร
         const playerSheet = new Image();
-        // สร้าง object รูปภาพเปล่าๆ ขึ้นมา
-
         playerSheet.src = 'pixilart-sprite.png';
-        // กำหนดไฟล์รูปที่จะโหลด (ต้องอยู่โฟลเดอร์เดียวกับไฟล์ html นี้)
-        // ===== Animated Background =====
-        const backgrounds = [];
 
-        for (let i = 1; i <= 3; i++) {
-        const bg = new Image();
-        bg.src = `bg${i}.png`;
-        backgrounds.push(bg);
-        }
+        // ===== NEW: Animated Background Setup =====
+        const bgSheet = new Image();
+        bgSheet.src = 'IMG_0052.png'; // ไฟล์ภาพแอนิเมชันพื้นหลังแบบ Grid 4x3
 
-        let currentBg = 0;
-        let bgTimer = 0;
-        const bgSpeed = 30;
-// ===============================
+        // กำหนดรายละเอียดโครงสร้าง Grid ของพื้นหลัง
+        const bgCols = 4;             // จำนวนคอลัมน์ในรูปภาพ
+        const bgRows = 3;             // จำนวนแถวในรูปภาพ
+        const totalBgFrames = 12;     // จำนวนเฟรมทั้งหมด (4 x 3)
 
-        // ตั้งค่าขนาดพิกเซลของตัวละคร (สมมุติตอนวาดมาเฟรมละ 32x32 พิกเซล)
-        const frameWidth = 64;
-        // ความกว้างของภาพ 1 เฟรม (1 ท่าทาง) ใน sprite sheet หน่วยพิกเซล
-        const frameHeight = 64;
-        // ความสูงของภาพ 1 เฟรม
+        let currentBgFrame = 0;       // เฟรมพื้นหลังปัจจุบัน (0 ถึง 11)
+        let bgTimer = 0;              // ตัวนับรอบเพื่อหน่วงความเร็วแอนิเมชันพื้นหลัง
+        const bgSpeed = 8;            // ความเร็วแอนิเมชันพื้นหลัง (ยิ่งน้อยยิ่งสลับภาพไว)
+        // ==========================================
+
+        // ตั้งค่าขนาดพิกเซลของตัวละคร
+        const frameWidth = 64;        // ความกว้างของภาพ 1 เฟรมในสไปรต์ตัวละคร
+        const frameHeight = 64;       // ความสูงของภาพ 1 เฟรม
 
         // ข้อมูลของตัวละครและการเคลื่อนไหว
-        let playerX = 100;
-        // ตำแหน่งตัวละครบนแกน X (แนวนอน) บน canvas
-        let playerY = 100;
-        // ตำแหน่งตัวละครบนแกน Y (แนวตั้ง) บน canvas
+        let playerX = 100;            // ตำแหน่งตัวละครบนแกน X
+        let playerY = 100;            // ตำแหน่งตัวละครบนแกน Y
 
-        let currentFrame = 0;
-        // เฟรมปัจจุบันที่กำลังแสดง (เริ่มที่ 0)
-        const totalFrames = 3;
-        // จำนวนเฟรมทั้งหมดที่มีใน sprite sheet (มี 3 ท่า)
-        let frameTimer = 0;
-        // ตัวนับเฟรม (รอบของ requestAnimationFrame) เพื่อหน่วงเวลาสลับภาพ
-        const frameSpeed = 13;
-        // ต้องนับครบกี่รอบถึงจะเปลี่ยนเฟรม (ยิ่งน้อย = สลับไว, ยิ่งมาก = สลับช้า)
+        let currentFrame = 0;         // เฟรมปัจจุบันของตัวละครที่กำลังแสดง
+        const totalFrames = 3;        // จำนวนเฟรมทั้งหมดของตัวละคร
+        let frameTimer = 0;           // ตัวนับเฟรมของตัวละคร
+        const frameSpeed = 13;        // ความเร็วแอนิเมชันตัวละคร
 
         function gameLoop() {
-            // ฟังก์ชันหลักที่ทำงานวนซ้ำตลอดเวลา เพื่อวาดภาพใหม่ทุกเฟรม (คล้าย "หัวใจ" ของเกม)
+            // ฟังก์ชันหลักที่ทำงานวนซ้ำตลอดเวลา เพื่อวาดภาพใหม่ทุกเฟรม
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // ล้างภาพเก่าทั้งหมดบน canvas ก่อนวาดใหม่ (ไม่งั้นภาพจะซ้อนทับกันเลอะ)
-            // ===== Draw Animated Background =====
+            // ล้างภาพเก่าทั้งหมดบน canvas ก่อนวาดใหม่
+
+            // ===== NEW: Process & Draw Animated Background =====
             bgTimer++;
-
             if (bgTimer >= bgSpeed) {
-               currentBg = (currentBg + 1) % backgrounds.length;
-               bgTimer = 0;
-             }
-
-             if (backgrounds[currentBg].complete) {
-               ctx.drawImage(
-               backgrounds[currentBg],
-               0,
-               0,
-               canvas.width,
-               canvas.height
-             );
-           }
-         // ====================================
-
-            // 2. คำนวณเพื่อสลับเฟรมภาพเคลื่อนไหว
-            frameTimer++;
-            // เพิ่มตัวนับทุกครั้งที่ลูปทำงาน
-
-            if (frameTimer >= frameSpeed) {
-                // ถ้านับครบตามที่กำหนด (13 ครั้ง) ให้เปลี่ยนเฟรม
-                currentFrame = (currentFrame + 1) % totalFrames;
-                // เปลี่ยนไปเฟรมถัดไป พอครบ 3 แล้ววนกลับไปเฟรม 0 ใหม่ (0 -> 1 -> 2 -> 0...)
-                frameTimer = 0;
-                // รีเซ็ตตัวนับกลับเป็น 0 เพื่อเริ่มนับใหม่
+                currentBgFrame = (currentBgFrame + 1) % totalBgFrames; // วนเฟรมที่ 0 ถึง 11
+                bgTimer = 0;
             }
 
-            // 3. วาดภาพโดยตัดเอาเฉพาะเฟรมที่ต้องการมาจาก Sprite Sheet
-            if (playerSheet.complete) {
-                // ตรวจสอบว่ารูปโหลดเสร็จสมบูรณ์แล้วหรือยัง ก่อนจะวาด (กันรูปยังไม่มาแล้วพัง)
+            if (bgSheet.complete) {
+                // คำนวณหาขนาดที่แท้จริงของภาพเดี่ยว 1 เฟรม จากขนาดภาพรวมที่โหลดเข้ามา
+                const bgFrameWidth = bgSheet.width / bgCols;
+                const bgFrameHeight = bgSheet.height / bgRows;
+
+                // คำนวณหาพิกัด X และ Y (แถวและคอลัมน์) บนสไปรต์ชีต grid 4x3
+                const bgSourceX = (currentBgFrame % bgCols) * bgFrameWidth;
+                const bgSourceY = Math.floor(currentBgFrame / bgCols) * bgFrameHeight;
 
                 ctx.drawImage(
+                    bgSheet,
+                    bgSourceX, bgSourceY,         // ตำแหน่งเริ่มต้นตัดภาพแกน X, Y บน Grid
+                    bgFrameWidth, bgFrameHeight,   // ขนาดความกว้าง, สูง ของ 1 เฟรมที่จะตัดมา
+                    0, 0,                          // วาดที่มุมซ้ายบนสุดของ Canvas (0, 0)
+                    canvas.width, canvas.height    // ปรับยืดภาพให้เต็มพื้นที่ความกว้างและสูงของ Canvas
+                );
+            }
+            // ====================================================
+
+            // 2. คำนวณเพื่อสลับเฟรมภาพเคลื่อนไหวตัวละคร
+            frameTimer++;
+            if (frameTimer >= frameSpeed) {
+                currentFrame = (currentFrame + 1) % totalFrames;
+                frameTimer = 0;
+            }
+
+            // 3. วาดภาพโดยตัดเอาเฉพาะเฟรมที่ต้องการมาจาก Sprite Sheet ตัวละคร
+            if (playerSheet.complete) {
+                ctx.drawImage(
                     playerSheet,
-                    // ภาพต้นฉบับ (sprite sheet ทั้งแผ่น)
-
-                    currentFrame * frameWidth, 0,
-                    // ตำแหน่งเริ่มตัดภาพในไฟล์ต้นฉบับ
-                    // X = เฟรมปัจจุบัน คูณ ความกว้างเฟรม (เลื่อนไปขวาทีละเฟรม)
-                    // Y = 0 (แถวบนสุด)
-
-                    frameWidth, frameHeight,
-                    // ขนาดพื้นที่ที่จะตัดออกมาจากต้นฉบับ (กว้าง x สูง ของ 1 เฟรม)
-
-                    playerX, playerY,
-                    // ตำแหน่งที่จะเอาภาพไปวางบน canvas
-
-                    64, 64
-                    // ขนาดที่จะแสดงผลจริงบนหน้าจอ (ในที่นี้เท่ากับขนาดต้นฉบับพอดี)
+                    currentFrame * frameWidth, 0,   // ตำแหน่งเริ่มตัดภาพตัวละครในแผ่นสไปรต์ชีต
+                    frameWidth, frameHeight,         // ขนาดพื้นที่ที่จะตัดออกมาจากต้นฉบับ
+                    playerX, playerY,               // ตำแหน่งที่จะเอาภาพไปวางบน canvas
+                    64, 64                          // ขนาดที่จะแสดงผลจริงบนหน้าจอ
                 );
             }
 
             requestAnimationFrame(gameLoop);
-            // สั่งให้เบราว์เซอร์เรียก gameLoop ซ้ำอีกครั้งในเฟรมถัดไป (ทำให้เกิดการวนลูปไม่รู้จบ)
+            // สั่งให้เบราว์เซอร์เรียก gameLoop ซ้ำอีกครั้งในเฟรมถัดไป
         }
 
-        playerSheet.onload = function() {
-            // ฟังก์ชันนี้จะถูกเรียกอัตโนมัติ "เมื่อรูปโหลดเสร็จแล้วเท่านั้น"        
+        // เริ่มรันระบบเมื่อตัวภาพพื้นหลังพร้อมใช้งาน
+        bgSheet.onload = function() {
             gameLoop();
-            // เริ่มต้นลูปเกมครั้งแรก
         };
     </script>
 </body>
