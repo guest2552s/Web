@@ -4,6 +4,22 @@
         <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
         <title>grader</title>
         <style>
+
+            .back-btn{
+            background:#35046d;
+            color:white;
+            border:none;
+            padding:10px 18px;
+            border-radius:8px;
+            cursor:pointer;
+            margin-bottom:15px;
+            font-size:16px;
+            }
+
+            .back-btn:hover{
+            background:#4b078f;
+            }
+            
             #edit{
                 width: 50%;
                 height: 300px;
@@ -15,6 +31,11 @@
         </style>
     </head>
     <body>
+        <button class="back-btn" onclick="window.location.href='../index.html'">
+        ← Back
+        </button>
+
+        <h1>EP1</h1>
         <h1>EP1</h1>
         <p>cout 2 ตัวเลขมา</p>
         <div id="edit"></div>
