@@ -1,33 +1,28 @@
 <!DOCTYPE html>
 <html>
     <head>
-        
         <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
-        <title>
-            grader
-        </title>
+        <title>grader</title>
         <style>
             #edit{
-                width: 80%;
+                width: 50%;
                 height: 300px;
                 border: 1px solid #35046d;
+                display: flex;  
+                justify-content: flex-end;
+                align-items: flex-end; 
             }
         </style>
     </head>
     <body>
-        <h1>
-            EP1
-        </h1>
-        <p>
-            cout 2 ตัวเลขมา
-        </p>
+        <h1>EP1</h1>
+        <p>cout 2 ตัวเลขมา</p>
         <div id="edit"></div>
-        <button id="submit">ตอบ</button>
+        <button onclick="submitCode()">ส่ง</button>
         <h3>ผล:</h3>
         <div id="out"></div>
 
         <script>
-            // 1. บอกให้ระบบรู้ว่าจะโหลด Monaco Editor จากที่ไหน
             require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
             let editor;
 
@@ -36,14 +31,34 @@
                     value: '#include<bits/stdc++.h>\nusing namespace std;\nint main(){\n\n}',
                     language: 'cpp',
                     theme: 'vs-dark',
-
                 });
             });
+
             async function submitCode() {
                 const code = editor.getValue();
+                const encoded = btoa(unescape(encodeURIComponent(code)));
+                document.getElementById('out').innerHTML = 'กำลังรัน...';
+                const res = await fetch(
+                    'https://ce.judge0.com/submissions?base64_encoded=true&wait=true',{
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            source_code: encoded,
+                            language_id: 54,
+                            stdin: '',
+                        })
+                    }
+                )
+                const data = await res.json();
+                const output = data.stdout ? atob(data.stdout).trim() : '';
+                const error = data.stderr ? atob(data.stderr).trim() : '';
+                if (data.status.id === 3) {
+                   document.getElementById('out').innerHTML = 'Output: ' + output;
+                }
+                else{
+                    document.getElementById('out').innerHTML = 'Error: ' + error;
+                }
             }
-
-            
         </script>
     </body>
 </html>
