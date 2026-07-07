@@ -38,6 +38,25 @@
     }
         /* ที่สร้างปุ่มมมมมมมมมมมมมมมมมมมมมมม */
 
+    #profileButton{
+        position:absolute;
+
+        top:20px;
+        right:20px;
+
+        width:55px;
+        height:55px;
+
+        border:none;
+        border-radius:50%;
+
+        font-size:28px;
+
+        cursor:pointer;
+
+        background:#ffffff;
+        }
+
 
 
         
@@ -69,12 +88,31 @@
     Playground
     </button>
     <!-- ที่สร้างปุ่มมมมมมมมมมมมมมมมมมมมมมม v2-->
+    <button id="profileButton">
+    👤
+    </button>
 
 
     
     <!-- พื้นที่วาดภาพ/เกม กำหนด id ไว้เรียกใช้ใน JavaScript ขนาด 400x400 พิกเซล -->
 
     <script>
+
+        const profileButton = document.getElementById("profileButton");
+
+        profileButton.addEventListener("click", () => {
+
+         const token = localStorage.getItem("token");
+
+        if(token){
+        window.location.href = "Profile/";
+        }else{
+        window.location.href = "Login/";
+        }
+
+        });
+
+        
         // ส่วนนี้คือ JavaScript ใช้ควบคุมการทำงานของเกม
 
         const canvas = document.getElementById('gameCanvas');
