@@ -1,1 +1,3 @@
 http://localhost:3000
+server running = good
+error = bad
