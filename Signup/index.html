@@ -1,17 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Create Account</title>
-
-<style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+-box;
     font-family:Arial, Helvetica, sans-serif;
 }
 
@@ -338,32 +325,36 @@ function togglePassword(id){
 
 }
 
-document.getElementById("signupForm").addEventListener("submit",function(e){
+document.getElementById("signupForm").addEventListener("submit", async function(e){
 
     e.preventDefault();
 
-    const username=document.getElementById("username").value.trim();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+    const confirm = document.getElementById("confirmPassword").value;
+    const error = document.getElementById("error");
 
-    const password=document.getElementById("password").value;
+    error.textContent = "";
 
-    const confirm=document.getElementById("confirmPassword").value;
-
-    const error=document.getElementById("error");
-
-    error.textContent="";
-
-    if(password!==confirm){
-
-        error.textContent="Passwords do not match.";
-
+    if(password !== confirm){
+        error.textContent = "Passwords do not match.";
         return;
-
     }
 
-    // Temporary
-    alert("Account created successfully! (Backend coming soon)");
+    const response = await fetch("http://localhost:3000/signup",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            username,
+            password
+        })
+    });
 
-    window.location.href="../Login/";
+    const data = await response.json();
+
+    alert(data.message);
 
 });
 
@@ -371,3 +362,17 @@ document.getElementById("signupForm").addEventListener("submit",function(e){
 
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Create Account</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border
