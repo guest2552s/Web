@@ -1,12 +1,14 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080b16">
-  <title>Code Playground — Learn. Build. Level Up.</title>
+  <meta name="description" content="SPKGrader แพลตฟอร์มเรียนรู้ภาษา C++ ฝึกแก้โจทย์ และพัฒนาทักษะการเขียนโปรแกรม">
+  <title>SPKGrader — เรียนรู้ ฝึกฝน ก้าวไปอีกระดับ</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Prompt:wght@300;400;500;600;700;800&display=swap');
 
     :root {
       --bg: #080b16;
@@ -28,7 +30,7 @@
         radial-gradient(ellipse at 78% 9%, rgba(105, 74, 220, .20), transparent 33%),
         radial-gradient(ellipse at 10% 42%, rgba(33, 179, 192, .10), transparent 30%),
         var(--bg);
-      font-family: 'Manrope', sans-serif;
+      font-family: 'Prompt', sans-serif;
       overflow-x: hidden;
     }
     a { color: inherit; text-decoration: none; }
@@ -52,22 +54,22 @@
       border-bottom: 1px solid rgba(170,184,255,.08);
     }
     nav { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: -.6px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: 0; }
     .brand-mark {
       width: 37px; height: 37px; display: grid; place-items: center; border-radius: 12px;
       color: #08101a; font: 700 18px 'DM Mono', monospace;
       background: linear-gradient(135deg, var(--cyan), var(--purple));
       box-shadow: 0 0 28px rgba(92,225,230,.22);
     }
-    .brand span:last-child { font-size: 16px; }
-    .nav-links { display: flex; align-items: center; gap: 30px; color: var(--muted); font-size: 13px; font-weight: 700; }
+    .brand span:last-child { font-size: 17px; }
+    .nav-links { display: flex; align-items: center; gap: 30px; color: var(--muted); font-size: 13px; font-weight: 600; }
     .nav-links a:hover { color: var(--text); }
     .nav-actions { display: flex; align-items: center; gap: 12px; }
-    .login { color: #d9def2; font-size: 13px; font-weight: 700; padding: 10px 12px; }
+    .login { color: #d9def2; font-size: 13px; font-weight: 600; padding: 10px 12px; }
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 10px;
       border: 0; border-radius: 12px; padding: 13px 19px; cursor: pointer;
-      font-size: 13px; font-weight: 800; transition: .2s ease;
+      font-size: 13px; font-weight: 700; transition: .2s ease;
     }
     .btn-primary {
       color: #09111b; background: linear-gradient(110deg, var(--cyan), #9bf0dc 48%, #b49aff);
@@ -82,14 +84,14 @@
       display: inline-flex; align-items: center; gap: 9px; padding: 8px 12px;
       border: 1px solid rgba(92,225,230,.22); border-radius: 999px;
       background: rgba(92,225,230,.055); color: #a5f1ec;
-      font: 11px 'DM Mono', monospace; letter-spacing: .5px; text-transform: uppercase;
+      font: 11px 'Prompt', sans-serif; letter-spacing: .2px;
     }
     .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
-    h1 { margin: 23px 0 19px; max-width: 650px; font-size: clamp(43px, 6vw, 72px); line-height: 1.06; letter-spacing: -4.5px; }
+    h1 { margin: 23px 0 19px; max-width: 650px; font-size: clamp(43px, 6vw, 72px); line-height: 1.25; letter-spacing: -1px; }
     .gradient-text { color: transparent; background: linear-gradient(100deg, #75e9e4, #a98cff 75%); background-clip: text; -webkit-background-clip: text; }
     .hero-copy { max-width: 510px; color: var(--muted); font-size: 15px; line-height: 1.9; }
     .hero-buttons { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 30px; }
-    .hero-note { margin-top: 23px; color: #737f9f; font: 11px 'DM Mono', monospace; }
+    .hero-note { margin-top: 23px; color: #737f9f; font: 11px 'Prompt', sans-serif; }
 
     .visual { position: relative; min-width: 0; }
     .orbit {
@@ -116,11 +118,11 @@
     .purple { color: #c3a4ff; } .cyan { color: #79e7e1; } .yellow { color: #f4d58a; } .green { color: #9be6b4; } .comment { color: #697797; }
     .output { margin: 14px 18px 18px; padding: 13px 15px; border-radius: 11px; background: rgba(92,225,230,.06); border: 1px solid rgba(92,225,230,.14); }
     .output-label { color: #7d8aa9; font: 9px 'DM Mono', monospace; letter-spacing: 1px; }
-    .output strong { display: block; margin-top: 5px; color: #9cf0d4; font: 12px 'DM Mono', monospace; }
+    .output strong { display: block; margin-top: 5px; color: #9cf0d4; font: 12px 'Prompt', sans-serif; }
     .float-tag {
       position: absolute; z-index: 2; padding: 11px 14px; border-radius: 12px;
       border: 1px solid var(--line); background: rgba(18,25,48,.88); backdrop-filter: blur(12px);
-      box-shadow: 0 12px 35px rgba(0,0,0,.25); color: #dfe6ff; font: 11px 'DM Mono', monospace;
+      box-shadow: 0 12px 35px rgba(0,0,0,.25); color: #dfe6ff; font: 11px 'Prompt', sans-serif;
       animation: float 5s ease-in-out infinite;
     }
     .tag-one { top: 8%; right: -2%; } .tag-two { bottom: 7%; left: -4%; animation-delay: -2s; }
@@ -128,8 +130,8 @@
 
     .section { padding: 82px 0; }
     .section-head { max-width: 650px; margin-bottom: 35px; }
-    .kicker { color: var(--cyan); font: 11px 'DM Mono', monospace; letter-spacing: 1.7px; text-transform: uppercase; }
-    h2 { margin: 12px 0; font-size: clamp(29px, 4vw, 43px); letter-spacing: -2px; line-height: 1.15; }
+    .kicker { color: var(--cyan); font: 11px 'Prompt', sans-serif; letter-spacing: .5px; }
+    h2 { margin: 12px 0; font-size: clamp(29px, 4vw, 43px); letter-spacing: -1px; line-height: 1.35; }
     .section-head p { color: var(--muted); line-height: 1.8; font-size: 14px; }
     .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
     .path-card {
@@ -142,7 +144,7 @@
     .path-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: var(--icon-bg); color: var(--icon-color); font: 17px 'DM Mono', monospace; }
     .path-card h3 { margin: 21px 0 8px; font-size: 17px; }
     .path-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.8; max-width: 290px; }
-    .path-meta { margin-top: 19px; color: #7d89a8; font: 10px 'DM Mono', monospace; }
+    .path-meta { margin-top: 19px; color: #7d89a8; font: 10px 'Prompt', sans-serif; }
 
     .feature-panel {
       display: grid; grid-template-columns: .9fr 1.1fr; gap: 42px; align-items: center;
@@ -182,7 +184,7 @@
       .nav-links { display: none; }
       .login { display: none; }
       .hero { min-height: auto; padding: 58px 0 70px; }
-      h1 { letter-spacing: -2.8px; }
+      h1 { letter-spacing: -1px; }
       .hero-copy { font-size: 13px; }
       .code-window { transform: none; }
       .code-body { padding: 17px 12px; font-size: 10px; }
@@ -205,19 +207,19 @@
 
   <header class="nav-wrap">
     <nav class="wrap">
-      <a class="brand" href="#" aria-label="Code Playground home">
+      <a class="brand" href="#" aria-label="หน้าแรก SPKGrader">
         <span class="brand-mark">&lt;/&gt;</span>
-        <span>Code Playground</span>
+        <span>SPKGrader</span>
       </a>
       <div class="nav-links">
-        <a href="#">Home</a>
-        <a href="#learning-paths">Learning paths</a>
-        <a href="#why-us">About</a>
+        <a href="#">หน้าแรก</a>
+        <a href="#learning-paths">เส้นทางการเรียนรู้</a>
+        <a href="#why-us">เกี่ยวกับเรา</a>
       </div>
       <div class="nav-actions">
-        <!-- Replace #login with your login page when it is ready. -->
-        <a class="login" href="#login">Log in</a>
-        <a class="btn btn-primary" href="/game/index.html">Start learning <span>↗</span></a>
+        <!-- เปลี่ยน #login เป็นหน้าล็อกอินจริงเมื่อพร้อมใช้งาน -->
+        <a class="login" href="#login">เข้าสู่ระบบ</a>
+        <a class="btn btn-primary" href="/game/index.html">เริ่มเรียนรู้ <span>↗</span></a>
       </div>
     </nav>
   </header>
@@ -225,23 +227,24 @@
   <main>
     <section class="hero wrap">
       <div>
-        <div class="eyebrow"><span class="pulse"></span> Your next level starts here</div>
-        <h1>Think in code.<br><span class="gradient-text">Level up</span> your mind.</h1>
+        <div class="eyebrow"><span class="pulse"></span> ก้าวต่อไปของคุณ เริ่มต้นที่นี่</div>
+        <h1>คิดอย่างเป็นระบบ<br><span class="gradient-text">พัฒนาทักษะ</span> ด้วยการเขียนโค้ด</h1>
         <p class="hero-copy">
-          Turn programming into a challenge worth playing. Learn C++, solve problems,
-          build your skills, and take your first steps toward the POSN Computer Olympiad.
+          เปลี่ยนการเรียนเขียนโปรแกรมให้เป็นความท้าทายที่สนุกและน่าลงมือทำ
+          เรียนรู้ภาษา C++ ฝึกแก้โจทย์ พัฒนาทักษะการคิดอย่างเป็นตรรกะ
+          และเตรียมความพร้อมสู่การแข่งขันคอมพิวเตอร์โอลิมปิก สอวน.
         </p>
         <div class="hero-buttons">
-          <a class="btn btn-primary" href="/game/index.html">Enter the playground <span>→</span></a>
-          <a class="btn btn-ghost" href="#learning-paths">Explore learning paths</a>
+          <a class="btn btn-primary" href="/game/index.html">เข้าสู่บทเรียน <span>→</span></a>
+          <a class="btn btn-ghost" href="#learning-paths">ดูเส้นทางการเรียนรู้</a>
         </div>
-        <div class="hero-note">// Learn at your pace. Progress through every challenge.</div>
+        <div class="hero-note">// เรียนรู้ตามจังหวะของคุณ พัฒนาตัวเองผ่านทุกความท้าทาย</div>
       </div>
 
-      <div class="visual" aria-label="Decorative code editor illustration">
+      <div class="visual" aria-label="ภาพตัวอย่างหน้าต่างเขียนโค้ด">
         <div class="orbit"></div>
-        <div class="float-tag tag-one">C++ · Problem solving</div>
-        <div class="float-tag tag-two">LEVEL UP <span style="color:#78e8d8">+ XP</span></div>
+        <div class="float-tag tag-one">C++ · การแก้ปัญหา</div>
+        <div class="float-tag tag-two">เลเวลอัป <span style="color:#78e8d8">+ XP</span></div>
         <div class="code-window">
           <div class="window-top">
             <div class="dots"><i></i><i></i><i></i></div>
@@ -262,8 +265,8 @@
             <div class="line"><span class="ln">11</span><span>}</span></div>
           </div>
           <div class="output">
-            <div class="output-label">PLAYGROUND OUTPUT</div>
-            <strong>✓ New challenge unlocked. Keep going!</strong>
+            <div class="output-label">ผลลัพธ์จากระบบ</div>
+            <strong>✓ ปลดล็อกโจทย์ใหม่แล้ว! ไปต่อกันเลย</strong>
           </div>
         </div>
       </div>
@@ -271,28 +274,28 @@
 
     <section class="section wrap" id="learning-paths">
       <div class="section-head">
-        <div class="kicker">Choose your path</div>
-        <h2>Every expert starts<br>with a first challenge.</h2>
-        <p>Build a strong foundation, practise your problem-solving, and gradually take on more advanced programming challenges.</p>
+        <div class="kicker">เลือกเส้นทางของคุณ</div>
+        <h2>ทุกความเชี่ยวชาญ<br>เริ่มต้นจากโจทย์แรก</h2>
+        <p>สร้างพื้นฐานการเขียนโปรแกรมให้แข็งแกร่ง ฝึกฝนทักษะการแก้ปัญหา และค่อย ๆ ก้าวไปสู่โจทย์ที่ท้าทายและซับซ้อนยิ่งขึ้น</p>
       </div>
       <div class="paths">
         <article class="path-card" style="--glow:#5ce1e6;--icon-bg:rgba(92,225,230,.1);--icon-color:#72e9e2">
           <div class="path-icon">{ }</div>
-          <h3>Beginner</h3>
-          <p>Start with programming fundamentals, variables, conditions, loops, and simple problems.</p>
-          <div class="path-meta">01 / BUILD YOUR FOUNDATION</div>
+          <h3>ระดับเริ่มต้น</h3>
+          <p>เรียนรู้พื้นฐานการเขียนโปรแกรม ตัวแปร เงื่อนไข ลูป และฝึกแก้โจทย์เบื้องต้น</p>
+          <div class="path-meta">01 / สร้างพื้นฐานให้แข็งแกร่ง</div>
         </article>
         <article class="path-card" style="--glow:#9b7bff;--icon-bg:rgba(155,123,255,.13);--icon-color:#b69cff">
           <div class="path-icon">[ ]</div>
-          <h3>Intermediate</h3>
-          <p>Strengthen your logic with arrays, functions, searching, sorting, and useful algorithms.</p>
-          <div class="path-meta">02 / TRAIN YOUR LOGIC</div>
+          <h3>ระดับกลาง</h3>
+          <p>พัฒนาทักษะการคิดด้วย Array, Function, Searching, Sorting และอัลกอริทึมที่สำคัญ</p>
+          <div class="path-meta">02 / ฝึกฝนกระบวนการคิด</div>
         </article>
         <article class="path-card" style="--glow:#f0b76b;--icon-bg:rgba(240,183,107,.12);--icon-color:#f0c17e">
           <div class="path-icon">&lt;/&gt;</div>
-          <h3>Advanced</h3>
-          <p>Challenge yourself with more complex problems and competitive-programming techniques.</p>
-          <div class="path-meta">03 / PUSH YOUR LIMITS</div>
+          <h3>ระดับสูง</h3>
+          <p>ท้าทายตัวเองด้วยโจทย์ที่ซับซ้อนและเทคนิคการเขียนโปรแกรมเชิงแข่งขัน</p>
+          <div class="path-meta">03 / ก้าวข้ามขีดจำกัดของคุณ</div>
         </article>
       </div>
     </section>
@@ -300,37 +303,38 @@
     <section class="section wrap" id="why-us">
       <div class="feature-panel">
         <div>
-          <div class="kicker">More than just coding</div>
-          <h2>Practice. Improve.<br><span class="gradient-text">Become a problem solver.</span></h2>
+          <div class="kicker">มากกว่าการเขียนโค้ด</div>
+          <h2>ฝึกฝน พัฒนา<br><span class="gradient-text">สู่การเป็นนักแก้ปัญหา</span></h2>
           <p style="color:var(--muted);font-size:13px;line-height:1.85">
-            Code Playground is designed to make learning programming more engaging through
-            hands-on challenges and a clear progression from beginner to advanced topics.
+            SPKGrader ถูกออกแบบมาเพื่อทำให้การเรียนรู้การเขียนโปรแกรมน่าสนใจยิ่งขึ้น
+            ผ่านโจทย์ที่ได้ลงมือทำจริง พร้อมเส้นทางการเรียนรู้ที่เป็นขั้นตอน
+            ตั้งแต่ระดับเริ่มต้นไปจนถึงระดับสูง
           </p>
-          <a class="btn btn-primary" style="margin-top:12px" href="/game/index.html">Try a challenge <span>→</span></a>
+          <a class="btn btn-primary" style="margin-top:12px" href="/game/index.html">ลองทำโจทย์เลย <span>→</span></a>
         </div>
         <div class="feature-list">
-          <div class="feature"><div class="check">✓</div><div><strong>Learn by doing</strong><span>Put concepts into practice instead of only reading about them.</span></div></div>
-          <div class="feature"><div class="check">✓</div><div><strong>Progress step by step</strong><span>Move from fundamental concepts toward more challenging problems.</span></div></div>
-          <div class="feature"><div class="check">✓</div><div><strong>Train for problem solving</strong><span>Develop the logical thinking used in competitive programming.</span></div></div>
-          <div class="feature"><div class="check">✓</div><div><strong>Made for curious learners</strong><span>Explore, experiment, make mistakes, and learn from them.</span></div></div>
+          <div class="feature"><div class="check">✓</div><div><strong>เรียนรู้ผ่านการลงมือทำ</strong><span>นำความรู้ไปประยุกต์ใช้กับโจทย์จริง แทนการอ่านทฤษฎีเพียงอย่างเดียว</span></div></div>
+          <div class="feature"><div class="check">✓</div><div><strong>พัฒนาอย่างเป็นขั้นตอน</strong><span>เรียนรู้ตั้งแต่แนวคิดพื้นฐานไปจนถึงโจทย์ที่มีความท้าทายมากขึ้น</span></div></div>
+          <div class="feature"><div class="check">✓</div><div><strong>ฝึกทักษะการแก้ปัญหา</strong><span>พัฒนาการคิดอย่างมีตรรกะ ซึ่งเป็นพื้นฐานสำคัญของการแข่งขันเขียนโปรแกรม</span></div></div>
+          <div class="feature"><div class="check">✓</div><div><strong>สร้างพื้นที่สำหรับคนช่างสงสัย</strong><span>เปิดโอกาสให้ทดลอง ค้นหาวิธีแก้ปัญหา เรียนรู้จากข้อผิดพลาด และพัฒนาตัวเอง</span></div></div>
         </div>
       </div>
     </section>
 
     <section class="section wrap">
       <div class="cta">
-        <div class="kicker">Ready when you are</div>
-        <h2>Your coding journey starts <span class="gradient-text">now.</span></h2>
-        <p>Take on your first challenge, learn something new, and keep moving toward your next level.</p>
-        <a class="btn btn-primary" href="/game/index.html">Start your journey <span>↗</span></a>
+        <div class="kicker">พร้อมเริ่มต้นแล้วหรือยัง?</div>
+        <h2>เส้นทางการเขียนโค้ดของคุณ<br><span class="gradient-text">เริ่มต้นได้แล้ววันนี้</span></h2>
+        <p>ลองทำโจทย์แรก เรียนรู้สิ่งใหม่ และพัฒนาทักษะของคุณเพื่อก้าวไปสู่ระดับต่อไป</p>
+        <a class="btn btn-primary" href="/game/index.html">เริ่มต้นเส้นทางของคุณ <span>↗</span></a>
       </div>
     </section>
   </main>
 
   <footer>
     <div class="wrap footer-inner">
-      <div>© <span id="year"></span> Code Playground. Learn. Build. Level Up.</div>
-      <div class="footer-links"><a href="#">Home</a><a href="#learning-paths">Learning paths</a><a href="#why-us">About</a></div>
+      <div>© <span id="year"></span> SPKGrader — เรียนรู้ ฝึกฝน และพัฒนาตัวเอง</div>
+      <div class="footer-links"><a href="#">หน้าแรก</a><a href="#learning-paths">เส้นทางการเรียนรู้</a><a href="#why-us">เกี่ยวกับเรา</a></div>
     </div>
   </footer>
   <script>
