@@ -1,237 +1,340 @@
 <!DOCTYPE html>
-<!-- บอกเบราว์เซอร์ว่านี่คือเอกสาร HTML5 -->
-<html lang="th">
-<!-- เริ่มต้นเอกสาร HTML กำหนดภาษาเป็นไทย -->
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <!-- กำหนดการเข้ารหัสตัวอักษรเป็น UTF-8 เพื่อให้แสดงภาษาไทย/อังกฤษได้ถูกต้อง -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- ปรับการแสดงผลให้เหมาะกับขนาดหน้าจอมือถือ/แท็บเล็ต -->
-    <title>My Pixel Art Game</title>
-    <!-- ข้อความที่จะแสดงบนแท็บของเบราว์เซอร์ -->
-    <style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b16">
+  <title>Code Playground — Learn. Build. Level Up.</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
 
-
-        
-    /* ที่สร้างปุ่มมมมมมมมมมมมมมมมมมมมมมม */
-    #playButton {
-        position: absolute;
-
-        left: 250px;
-        top: 430px;
-
-        width: 200px;
-        height: 60px;
-
-        font-size: 24px;
-        cursor: pointer;
-
-        border: none;
-        border-radius: 10px;
-
-        background: #4CAF50;
-        color: white;
+    :root {
+      --bg: #080b16;
+      --panel: rgba(17, 23, 43, .78);
+      --panel-solid: #11172b;
+      --text: #f4f6ff;
+      --muted: #9ba6c4;
+      --purple: #9b7bff;
+      --cyan: #5ce1e6;
+      --line: rgba(170, 184, 255, .14);
     }
 
-    #playButton:hover {
-        background: #45a049;
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 78% 9%, rgba(105, 74, 220, .20), transparent 33%),
+        radial-gradient(ellipse at 10% 42%, rgba(33, 179, 192, .10), transparent 30%),
+        var(--bg);
+      font-family: 'Manrope', sans-serif;
+      overflow-x: hidden;
     }
-        /* ที่สร้างปุ่มมมมมมมมมมมมมมมมมมมมมมม */
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
 
-    #profileButton{
-        position:absolute;
+    .noise {
+      position: fixed; inset: 0; pointer-events: none; z-index: -1; opacity: .12;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+    }
+    .grid-glow {
+      position: absolute; inset: 0 0 auto; height: 760px; z-index: -1; pointer-events: none;
+      background-image: linear-gradient(rgba(151,165,255,.035) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(151,165,255,.035) 1px, transparent 1px);
+      background-size: 54px 54px;
+      mask-image: linear-gradient(to bottom, black, transparent 90%);
+    }
+    .wrap { width: min(1160px, calc(100% - 48px)); margin: auto; }
+    .nav-wrap {
+      position: sticky; top: 0; z-index: 20; padding: 16px 0;
+      backdrop-filter: blur(18px); background: rgba(8,11,22,.72);
+      border-bottom: 1px solid rgba(170,184,255,.08);
+    }
+    nav { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: -.6px; }
+    .brand-mark {
+      width: 37px; height: 37px; display: grid; place-items: center; border-radius: 12px;
+      color: #08101a; font: 700 18px 'DM Mono', monospace;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      box-shadow: 0 0 28px rgba(92,225,230,.22);
+    }
+    .brand span:last-child { font-size: 16px; }
+    .nav-links { display: flex; align-items: center; gap: 30px; color: var(--muted); font-size: 13px; font-weight: 700; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .login { color: #d9def2; font-size: 13px; font-weight: 700; padding: 10px 12px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      border: 0; border-radius: 12px; padding: 13px 19px; cursor: pointer;
+      font-size: 13px; font-weight: 800; transition: .2s ease;
+    }
+    .btn-primary {
+      color: #09111b; background: linear-gradient(110deg, var(--cyan), #9bf0dc 48%, #b49aff);
+      box-shadow: 0 8px 30px rgba(92,225,230,.15);
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 35px rgba(92,225,230,.25); }
+    .btn-ghost { color: #e6e9fa; border: 1px solid var(--line); background: rgba(255,255,255,.035); }
+    .btn-ghost:hover { border-color: rgba(155,123,255,.55); background: rgba(155,123,255,.08); }
 
-        top:20px;
-        right:20px;
+    .hero { min-height: 660px; display: grid; grid-template-columns: 1.04fr .96fr; align-items: center; gap: 48px; padding: 82px 0 94px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 9px; padding: 8px 12px;
+      border: 1px solid rgba(92,225,230,.22); border-radius: 999px;
+      background: rgba(92,225,230,.055); color: #a5f1ec;
+      font: 11px 'DM Mono', monospace; letter-spacing: .5px; text-transform: uppercase;
+    }
+    .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+    h1 { margin: 23px 0 19px; max-width: 650px; font-size: clamp(43px, 6vw, 72px); line-height: 1.06; letter-spacing: -4.5px; }
+    .gradient-text { color: transparent; background: linear-gradient(100deg, #75e9e4, #a98cff 75%); background-clip: text; -webkit-background-clip: text; }
+    .hero-copy { max-width: 510px; color: var(--muted); font-size: 15px; line-height: 1.9; }
+    .hero-buttons { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 30px; }
+    .hero-note { margin-top: 23px; color: #737f9f; font: 11px 'DM Mono', monospace; }
 
-        width:55px;
-        height:55px;
+    .visual { position: relative; min-width: 0; }
+    .orbit {
+      position: absolute; width: 440px; height: 440px; border: 1px solid rgba(155,123,255,.13);
+      border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      box-shadow: 0 0 100px rgba(116,86,226,.10), inset 0 0 80px rgba(116,86,226,.06);
+    }
+    .orbit:before, .orbit:after { content: ""; position: absolute; border: 1px solid rgba(92,225,230,.12); border-radius: 50%; inset: 34px; }
+    .orbit:after { inset: 76px; border-color: rgba(155,123,255,.12); }
+    .code-window {
+      position: relative; z-index: 1; max-width: 490px; margin: auto; overflow: hidden;
+      border: 1px solid rgba(178,190,255,.2); border-radius: 19px;
+      background: linear-gradient(145deg, rgba(24,31,57,.96), rgba(11,16,32,.96));
+      box-shadow: 0 28px 90px rgba(0,0,0,.42), 0 0 60px rgba(119,91,226,.12);
+      transform: perspective(1100px) rotateY(-5deg) rotateX(2deg);
+    }
+    .window-top { height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 17px; border-bottom: 1px solid var(--line); color: #7783a5; font: 11px 'DM Mono', monospace; }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 8px; height: 8px; border-radius: 50%; background: #fa7185; }
+    .dots i:nth-child(2) { background: #f5c66c; } .dots i:nth-child(3) { background: #62d9a2; }
+    .code-body { padding: 25px 24px 20px; font: 12px/2 'DM Mono', monospace; color: #c8d2f1; }
+    .line { display: flex; gap: 20px; white-space: pre; }
+    .ln { width: 13px; color: #56617f; text-align: right; user-select: none; }
+    .purple { color: #c3a4ff; } .cyan { color: #79e7e1; } .yellow { color: #f4d58a; } .green { color: #9be6b4; } .comment { color: #697797; }
+    .output { margin: 14px 18px 18px; padding: 13px 15px; border-radius: 11px; background: rgba(92,225,230,.06); border: 1px solid rgba(92,225,230,.14); }
+    .output-label { color: #7d8aa9; font: 9px 'DM Mono', monospace; letter-spacing: 1px; }
+    .output strong { display: block; margin-top: 5px; color: #9cf0d4; font: 12px 'DM Mono', monospace; }
+    .float-tag {
+      position: absolute; z-index: 2; padding: 11px 14px; border-radius: 12px;
+      border: 1px solid var(--line); background: rgba(18,25,48,.88); backdrop-filter: blur(12px);
+      box-shadow: 0 12px 35px rgba(0,0,0,.25); color: #dfe6ff; font: 11px 'DM Mono', monospace;
+      animation: float 5s ease-in-out infinite;
+    }
+    .tag-one { top: 8%; right: -2%; } .tag-two { bottom: 7%; left: -4%; animation-delay: -2s; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-        border:none;
-        border-radius:50%;
+    .section { padding: 82px 0; }
+    .section-head { max-width: 650px; margin-bottom: 35px; }
+    .kicker { color: var(--cyan); font: 11px 'DM Mono', monospace; letter-spacing: 1.7px; text-transform: uppercase; }
+    h2 { margin: 12px 0; font-size: clamp(29px, 4vw, 43px); letter-spacing: -2px; line-height: 1.15; }
+    .section-head p { color: var(--muted); line-height: 1.8; font-size: 14px; }
+    .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .path-card {
+      position: relative; overflow: hidden; padding: 25px; min-height: 230px;
+      border: 1px solid var(--line); border-radius: 17px; background: var(--panel);
+      transition: .25s ease;
+    }
+    .path-card:hover { transform: translateY(-6px); border-color: rgba(155,123,255,.45); background: rgba(23,30,57,.92); }
+    .path-card:after { content: ""; position: absolute; width: 150px; height: 150px; border-radius: 50%; right: -65px; bottom: -75px; background: var(--glow); filter: blur(2px); opacity: .15; }
+    .path-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: var(--icon-bg); color: var(--icon-color); font: 17px 'DM Mono', monospace; }
+    .path-card h3 { margin: 21px 0 8px; font-size: 17px; }
+    .path-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.8; max-width: 290px; }
+    .path-meta { margin-top: 19px; color: #7d89a8; font: 10px 'DM Mono', monospace; }
 
-        font-size:28px;
+    .feature-panel {
+      display: grid; grid-template-columns: .9fr 1.1fr; gap: 42px; align-items: center;
+      padding: 38px; border: 1px solid var(--line); border-radius: 22px;
+      background: linear-gradient(120deg, rgba(22,29,54,.92), rgba(14,19,38,.8));
+    }
+    .feature-list { display: grid; gap: 18px; }
+    .feature { display: flex; gap: 14px; align-items: flex-start; }
+    .check { flex: 0 0 27px; height: 27px; display: grid; place-items: center; border-radius: 9px; color: var(--cyan); background: rgba(92,225,230,.1); font-size: 13px; }
+    .feature strong { display: block; font-size: 13px; margin-bottom: 4px; }
+    .feature span { color: var(--muted); font-size: 11px; line-height: 1.7; }
+    .mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stat { padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.025); }
+    .stat b { display: block; color: var(--cyan); font: 25px 'DM Mono', monospace; }
+    .stat span { color: var(--muted); font-size: 11px; }
 
-        cursor:pointer;
+    .cta {
+      text-align: center; padding: 68px 24px; border: 1px solid rgba(155,123,255,.2);
+      border-radius: 22px; background: radial-gradient(ellipse at 50% 110%, rgba(117,91,226,.24), transparent 65%), rgba(17,23,43,.65);
+    }
+    .cta p { color: var(--muted); max-width: 500px; margin: 12px auto 24px; font-size: 13px; line-height: 1.8; }
+    footer { padding: 28px 0 36px; border-top: 1px solid rgba(170,184,255,.09); color: #7883a1; font-size: 11px; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .footer-links { display: flex; gap: 20px; }
 
-        background:#ffffff;
-        }
-
-
-
-        
-        /* ส่วนนี้คือ CSS ใช้จัดหน้าตา/สไตล์ของหน้าเว็บ */
-        body {
-            margin: 0;                     /* ลบขอบว่างรอบหน้าเว็บ */
-            background-color: #1f1f25;        /* สีพื้นหลังหน้าเว็บเป็นเทาเข้ม */
-            display: flex;                 /* ใช้ flexbox จัดตำแหน่ง */
-            justify-content: flex-start;       /* จัดกึ่งกลางแนวนอน */
-            align-items: flex-start;           /* จัดกึ่งกลางแนวตั้ง */
-            height: 100vh;                 /* ความสูงเต็มหน้าจอ */
-            overflow: hidden;              /* ซ่อนส่วนที่ล้นออกนอกจอ ไม่ให้มี scrollbar */
-        }
-        canvas {
-            border: 4px solid #fff;        /* ขอบสีขาวรอบ canvas หนา 4px */
-            image-rendering: pixelated;    /* ทำให้ภาพพิกเซลคมชัด ไม่เบลอตอนขยาย */
-            background-color: #444;        /* สีพื้นหลังของ canvas เอง */
-        }
-    </style>
+    @media (max-width: 850px) {
+      .hero { grid-template-columns: 1fr; padding-top: 65px; gap: 60px; }
+      .hero-copy { max-width: 620px; }
+      .visual { width: 100%; max-width: 570px; margin: auto; }
+      .paths { grid-template-columns: 1fr 1fr; }
+      .feature-panel { grid-template-columns: 1fr; }
+      .nav-links { gap: 16px; }
+    }
+    @media (max-width: 590px) {
+      .wrap { width: min(100% - 34px, 1160px); }
+      .nav-wrap { padding: 12px 0; }
+      .nav-links { display: none; }
+      .login { display: none; }
+      .hero { min-height: auto; padding: 58px 0 70px; }
+      h1 { letter-spacing: -2.8px; }
+      .hero-copy { font-size: 13px; }
+      .code-window { transform: none; }
+      .code-body { padding: 17px 12px; font-size: 10px; }
+      .line { gap: 12px; }
+      .orbit { width: 320px; height: 320px; }
+      .tag-one { right: -2%; top: -8%; } .tag-two { left: -2%; bottom: -8%; }
+      .paths { grid-template-columns: 1fr; }
+      .section { padding: 60px 0; }
+      .feature-panel { padding: 23px; }
+      .footer-inner { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+    }
+  </style>
 </head>
 <body>
+  <div class="noise"></div>
+  <div class="grid-glow"></div>
 
-    <canvas id="gameCanvas" width="700" height="400"></canvas>
+  <header class="nav-wrap">
+    <nav class="wrap">
+      <a class="brand" href="#" aria-label="Code Playground home">
+        <span class="brand-mark">&lt;/&gt;</span>
+        <span>Code Playground</span>
+      </a>
+      <div class="nav-links">
+        <a href="#">Home</a>
+        <a href="#learning-paths">Learning paths</a>
+        <a href="#why-us">About</a>
+      </div>
+      <div class="nav-actions">
+        <!-- Replace #login with your login page when it is ready. -->
+        <a class="login" href="#login">Log in</a>
+        <a class="btn btn-primary" href="/game/index.html">Start learning <span>↗</span></a>
+      </div>
+    </nav>
+  </header>
 
+  <main>
+    <section class="hero wrap">
+      <div>
+        <div class="eyebrow"><span class="pulse"></span> Your next level starts here</div>
+        <h1>Think in code.<br><span class="gradient-text">Level up</span> your mind.</h1>
+        <p class="hero-copy">
+          Turn programming into a challenge worth playing. Learn C++, solve problems,
+          build your skills, and take your first steps toward the POSN Computer Olympiad.
+        </p>
+        <div class="hero-buttons">
+          <a class="btn btn-primary" href="/game/index.html">Enter the playground <span>→</span></a>
+          <a class="btn btn-ghost" href="#learning-paths">Explore learning paths</a>
+        </div>
+        <div class="hero-note">// Learn at your pace. Progress through every challenge.</div>
+      </div>
 
-    
-    <!-- ที่สร้างปุ่มมมมมมมมมมมมมมมมมมมมมมม v2-->
-    <button id="playButton" onclick="window.location.href='Code-Playground/'">
-    Playground
-    </button>
-    <!-- ที่สร้างปุ่มมมมมมมมมมมมมมมมมมมมมมม v2-->
-    <button id="profileButton">
-    👤
-    </button>
+      <div class="visual" aria-label="Decorative code editor illustration">
+        <div class="orbit"></div>
+        <div class="float-tag tag-one">C++ · Problem solving</div>
+        <div class="float-tag tag-two">LEVEL UP <span style="color:#78e8d8">+ XP</span></div>
+        <div class="code-window">
+          <div class="window-top">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <span>challenge.cpp</span>
+            <span>● C++</span>
+          </div>
+          <div class="code-body">
+            <div class="line"><span class="ln">01</span><span><span class="purple">#include</span> <span class="green">&lt;iostream&gt;</span></span></div>
+            <div class="line"><span class="ln">02</span><span><span class="purple">using namespace</span> std;</span></div>
+            <div class="line"><span class="ln">03</span><span></span></div>
+            <div class="line"><span class="ln">04</span><span><span class="purple">int</span> <span class="yellow">main</span>() {</span></div>
+            <div class="line"><span class="ln">05</span><span>  <span class="purple">int</span> skill = <span class="cyan">0</span>;</span></div>
+            <div class="line"><span class="ln">06</span><span>  <span class="purple">while</span> (keepLearning) {</span></div>
+            <div class="line"><span class="ln">07</span><span>    skill++;</span></div>
+            <div class="line"><span class="ln">08</span><span>    solveProblem();</span></div>
+            <div class="line"><span class="ln">09</span><span>  }</span></div>
+            <div class="line"><span class="ln">10</span><span>  <span class="purple">return</span> <span class="cyan">0</span>;</span></div>
+            <div class="line"><span class="ln">11</span><span>}</span></div>
+          </div>
+          <div class="output">
+            <div class="output-label">PLAYGROUND OUTPUT</div>
+            <strong>✓ New challenge unlocked. Keep going!</strong>
+          </div>
+        </div>
+      </div>
+    </section>
 
+    <section class="section wrap" id="learning-paths">
+      <div class="section-head">
+        <div class="kicker">Choose your path</div>
+        <h2>Every expert starts<br>with a first challenge.</h2>
+        <p>Build a strong foundation, practise your problem-solving, and gradually take on more advanced programming challenges.</p>
+      </div>
+      <div class="paths">
+        <article class="path-card" style="--glow:#5ce1e6;--icon-bg:rgba(92,225,230,.1);--icon-color:#72e9e2">
+          <div class="path-icon">{ }</div>
+          <h3>Beginner</h3>
+          <p>Start with programming fundamentals, variables, conditions, loops, and simple problems.</p>
+          <div class="path-meta">01 / BUILD YOUR FOUNDATION</div>
+        </article>
+        <article class="path-card" style="--glow:#9b7bff;--icon-bg:rgba(155,123,255,.13);--icon-color:#b69cff">
+          <div class="path-icon">[ ]</div>
+          <h3>Intermediate</h3>
+          <p>Strengthen your logic with arrays, functions, searching, sorting, and useful algorithms.</p>
+          <div class="path-meta">02 / TRAIN YOUR LOGIC</div>
+        </article>
+        <article class="path-card" style="--glow:#f0b76b;--icon-bg:rgba(240,183,107,.12);--icon-color:#f0c17e">
+          <div class="path-icon">&lt;/&gt;</div>
+          <h3>Advanced</h3>
+          <p>Challenge yourself with more complex problems and competitive-programming techniques.</p>
+          <div class="path-meta">03 / PUSH YOUR LIMITS</div>
+        </article>
+      </div>
+    </section>
 
-    
-    <!-- พื้นที่วาดภาพ/เกม กำหนด id ไว้เรียกใช้ใน JavaScript ขนาด 400x400 พิกเซล -->
+    <section class="section wrap" id="why-us">
+      <div class="feature-panel">
+        <div>
+          <div class="kicker">More than just coding</div>
+          <h2>Practice. Improve.<br><span class="gradient-text">Become a problem solver.</span></h2>
+          <p style="color:var(--muted);font-size:13px;line-height:1.85">
+            Code Playground is designed to make learning programming more engaging through
+            hands-on challenges and a clear progression from beginner to advanced topics.
+          </p>
+          <a class="btn btn-primary" style="margin-top:12px" href="/game/index.html">Try a challenge <span>→</span></a>
+        </div>
+        <div class="feature-list">
+          <div class="feature"><div class="check">✓</div><div><strong>Learn by doing</strong><span>Put concepts into practice instead of only reading about them.</span></div></div>
+          <div class="feature"><div class="check">✓</div><div><strong>Progress step by step</strong><span>Move from fundamental concepts toward more challenging problems.</span></div></div>
+          <div class="feature"><div class="check">✓</div><div><strong>Train for problem solving</strong><span>Develop the logical thinking used in competitive programming.</span></div></div>
+          <div class="feature"><div class="check">✓</div><div><strong>Made for curious learners</strong><span>Explore, experiment, make mistakes, and learn from them.</span></div></div>
+        </div>
+      </div>
+    </section>
 
-    <script>
+    <section class="section wrap">
+      <div class="cta">
+        <div class="kicker">Ready when you are</div>
+        <h2>Your coding journey starts <span class="gradient-text">now.</span></h2>
+        <p>Take on your first challenge, learn something new, and keep moving toward your next level.</p>
+        <a class="btn btn-primary" href="/game/index.html">Start your journey <span>↗</span></a>
+      </div>
+    </section>
+  </main>
 
-        const profileButton = document.getElementById("profileButton");
-
-        profileButton.addEventListener("click", () => {
-
-         const token = localStorage.getItem("token");
-
-        if(token){
-        window.location.href = "Profile/";
-        }else{
-        window.location.href = "Login/";
-        }
-
-        });
-
-        
-        // ส่วนนี้คือ JavaScript ใช้ควบคุมการทำงานของเกม
-
-        const canvas = document.getElementById('gameCanvas');
-        // ดึง element canvas จาก HTML มาเก็บไว้ในตัวแปร canvas
-
-        const ctx = canvas.getContext('2d');
-        // ขอ "เครื่องมือวาดภาพ 2 มิติ" จาก canvas เก็บไว้ในตัวแปร ctx
-        // ทุกคำสั่งวาดภาพจะเรียกผ่าน ctx
-
-        // 1. โหลดไฟล์ Sprite Sheet
-        const playerSheet = new Image();
-        // สร้าง object รูปภาพเปล่าๆ ขึ้นมา
-
-        playerSheet.src = 'Asset/NPC.png';
-        // กำหนดไฟล์รูปที่จะโหลด (ต้องอยู่โฟลเดอร์เดียวกับไฟล์ html นี้)
-        // ===== Animated Background =====
-        const backgrounds = [];
-
-        for (let i = 1; i <= 3; i++) {
-        const bg = new Image();
-        bg.src = `Asset/bg${i}.png`;
-        backgrounds.push(bg);
-        }
-
-        let currentBg = 0;
-        let bgTimer = 0;
-        const bgSpeed = 30;
-// ===============================
-
-        // ตั้งค่าขนาดพิกเซลของตัวละคร (สมมุติตอนวาดมาเฟรมละ 32x32 พิกเซล)
-        const frameWidth = 128;
-        // ความกว้างของภาพ 1 เฟรม (1 ท่าทาง) ใน sprite sheet หน่วยพิกเซล
-        const frameHeight = 128;
-        // ความสูงของภาพ 1 เฟรม
-
-        // ข้อมูลของตัวละครและการเคลื่อนไหว
-        let playerX = 500;
-        // ตำแหน่งตัวละครบนแกน X (แนวนอน) บน canvas
-        let playerY = 300;
-        // ตำแหน่งตัวละครบนแกน Y (แนวตั้ง) บน canvas
-
-        let currentFrame = 0;
-        // เฟรมปัจจุบันที่กำลังแสดง (เริ่มที่ 0)
-        const totalFrames = 16;
-        // จำนวนเฟรมทั้งหมดที่มีใน sprite sheet (มี 3 ท่า)
-        let frameTimer = 0;
-        // ตัวนับเฟรม (รอบของ requestAnimationFrame) เพื่อหน่วงเวลาสลับภาพ
-        const frameSpeed = 5;
-        // ต้องนับครบกี่รอบถึงจะเปลี่ยนเฟรม (ยิ่งน้อย = สลับไว, ยิ่งมาก = สลับช้า)
-
-        function gameLoop() {
-            // ฟังก์ชันหลักที่ทำงานวนซ้ำตลอดเวลา เพื่อวาดภาพใหม่ทุกเฟรม (คล้าย "หัวใจ" ของเกม)
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // ล้างภาพเก่าทั้งหมดบน canvas ก่อนวาดใหม่ (ไม่งั้นภาพจะซ้อนทับกันเลอะ)
-            // ===== Draw Animated Background =====
-            bgTimer++;
-
-            if (bgTimer >= bgSpeed) {
-               currentBg = (currentBg + 1) % backgrounds.length;
-               bgTimer = 0;
-             }
-
-             if (backgrounds[currentBg].complete) {
-               ctx.drawImage(
-               backgrounds[currentBg],
-               0,
-               0,
-               canvas.width,
-               canvas.height
-             );
-           }
-         // ====================================
-
-            // 2. คำนวณเพื่อสลับเฟรมภาพเคลื่อนไหว
-            frameTimer++;
-            // เพิ่มตัวนับทุกครั้งที่ลูปทำงาน
-
-            if (frameTimer >= frameSpeed) {
-                // ถ้านับครบตามที่กำหนด (13 ครั้ง) ให้เปลี่ยนเฟรม
-                currentFrame = (currentFrame + 1) % totalFrames;
-                // เปลี่ยนไปเฟรมถัดไป พอครบ 3 แล้ววนกลับไปเฟรม 0 ใหม่ (0 -> 1 -> 2 -> 0...)
-                frameTimer = 0;
-                // รีเซ็ตตัวนับกลับเป็น 0 เพื่อเริ่มนับใหม่
-            }
-
-            // 3. วาดภาพโดยตัดเอาเฉพาะเฟรมที่ต้องการมาจาก Sprite Sheet
-            if (playerSheet.complete) {
-                // ตรวจสอบว่ารูปโหลดเสร็จสมบูรณ์แล้วหรือยัง ก่อนจะวาด (กันรูปยังไม่มาแล้วพัง)
-
-                ctx.drawImage(
-                    playerSheet,
-                    // ภาพต้นฉบับ (sprite sheet ทั้งแผ่น)
-
-                    currentFrame * frameWidth, 0,
-                    // ตำแหน่งเริ่มตัดภาพในไฟล์ต้นฉบับ
-                    // X = เฟรมปัจจุบัน คูณ ความกว้างเฟรม (เลื่อนไปขวาทีละเฟรม)
-                    // Y = 0 (แถวบนสุด)
-
-                    frameWidth, frameHeight,
-                    // ขนาดพื้นที่ที่จะตัดออกมาจากต้นฉบับ (กว้าง x สูง ของ 1 เฟรม)
-
-                    playerX, playerY,
-                    // ตำแหน่งที่จะเอาภาพไปวางบน canvas
-
-                    128, 128
-                    // ขนาดที่จะแสดงผลจริงบนหน้าจอ (ในที่นี้เท่ากับขนาดต้นฉบับพอดี)
-                );
-            }
-
-            requestAnimationFrame(gameLoop);
-            // สั่งให้เบราว์เซอร์เรียก gameLoop ซ้ำอีกครั้งในเฟรมถัดไป (ทำให้เกิดการวนลูปไม่รู้จบ)
-        }
-
-        playerSheet.onload = function() {
-            // ฟังก์ชันนี้จะถูกเรียกอัตโนมัติ "เมื่อรูปโหลดเสร็จแล้วเท่านั้น"        
-            gameLoop();
-            // เริ่มต้นลูปเกมครั้งแรก
-        };
-    </script>
+  <footer>
+    <div class="wrap footer-inner">
+      <div>© <span id="year"></span> Code Playground. Learn. Build. Level Up.</div>
+      <div class="footer-links"><a href="#">Home</a><a href="#learning-paths">Learning paths</a><a href="#why-us">About</a></div>
+    </div>
+  </footer>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
